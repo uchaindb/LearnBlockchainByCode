@@ -102,37 +102,6 @@ namespace UChainDB.Example.Chain.Core
             }
         }
 
-        private static Block GetValidHighestBlock(
-            IDictionary<UInt256, Block> allBlocks,
-            Block genesisBlock)
-        {
-            // find from highest, find the first one could reach genesis block
-            var blocks = allBlocks
-                .Select(_ => _.Value)
-                .OrderByDescending(_ => _.Nonce);
-            var highestBlock = genesisBlock;
-            foreach (var block in blocks)
-            {
-                var cursor = block;
-                while (cursor.Hash != genesisBlock.Hash)
-                {
-                    // if no previous block found, this block may have been isolated, abandoned
-                    if (!allBlocks.ContainsKey(cursor.PreviousBlockHash))
-                        break;
-                    cursor = allBlocks[cursor.PreviousBlockHash];
-                }
-
-                // this `block` could trace back to genesis block which are we expecting
-                if (cursor.Hash == genesisBlock.Hash)
-                {
-                    highestBlock = block;
-                    break;
-                }
-            }
-
-            return highestBlock;
-        }
-
         internal Transaction[] DequeueTransactions()
         {
             // don't allow duplicate transaction as they may 
