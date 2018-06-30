@@ -10,7 +10,7 @@ namespace UChainDB.Example.Chain.Entity
         private UInt256 previousBlockHash;
         private DateTime time;
         private Transaction[] transactions = new Transaction[] { };
-        private ulong nonce;
+        private uint nonce;
 
         public byte Version
         {
@@ -37,7 +37,7 @@ namespace UChainDB.Example.Chain.Entity
             set => this.SetPropertyField(ref this.transactions, value);
         }
 
-        public ulong Nonce
+        public uint Nonce
         {
             get => this.nonce;
             set => this.SetPropertyField(ref this.nonce, value);
