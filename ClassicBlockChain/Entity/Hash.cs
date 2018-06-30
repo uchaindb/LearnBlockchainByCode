@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace UChainDB.Example.BlockChain.Chain
+namespace UChainDB.Example.Chain.Entity
 {
     public class Hash
     {

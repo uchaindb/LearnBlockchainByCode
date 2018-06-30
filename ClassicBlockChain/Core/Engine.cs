@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
-using UChainDB.Example.BlockChain.Chain;
+using UChainDB.Example.Chain.Entity;
 
-namespace UChainDB.Example.BlockChain.Core
+namespace UChainDB.Example.Chain.Core
 {
     public class Engine : IDisposable
     {
         public BlockChain BlockChain;
 
-        private Thread thWorker;
+        private readonly Thread thWorker;
         private bool disposing = false;
         public event EventHandler<Block> OnNewBlockCreated;
         private readonly string MinerName;
@@ -19,7 +20,7 @@ namespace UChainDB.Example.BlockChain.Core
         {
             this.MinerName = minerName;
             this.BlockChain = new BlockChain();
-            this.thWorker = new Thread(GenerateBlock);
+            this.thWorker = new Thread(this.GenerateBlock);
             this.thWorker.Start();
         }
 
@@ -57,8 +58,8 @@ namespace UChainDB.Example.BlockChain.Core
 
                     var minerTran = new Transaction
                     {
-                        OutputOwners = new[] { new TransactionOutput { Owner = MinerName, Value = BlockChain.RewardOfBlock } },
-                        MetaData = DateTime.Now.ToString() + DateTime.Now.Ticks.ToString(),
+                        OutputOwners = new[] { new TransactionOutput { Owner = this.MinerName, Value = this.BlockChain.RewardOfBlock } },
+                        MetaData = DateTime.Now.ToString(CultureInfo.InvariantCulture) + DateTime.Now.Ticks,
                     };
                     var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
 

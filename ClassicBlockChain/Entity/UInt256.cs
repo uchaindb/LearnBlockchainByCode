@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace UChainDB.Example.BlockChain.Chain
+namespace UChainDB.Example.Chain.Entity
 {
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
     public class UInt256 : IComparable<UInt256>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UChainDB.Example.BlockChain.Chain
+namespace UChainDB.Example.Chain.Entity
 {
     public static class Extension
     {

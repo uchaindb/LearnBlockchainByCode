@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Linq;
-using UChainDB.Example.BlockChain.Chain;
-using UChainDB.Example.BlockChain.Core;
+using UChainDB.Example.Chain.Core;
+using UChainDB.Example.Chain.Entity;
 
-namespace UChainDB.Example.BlockChain
+namespace UChainDB.Example.Chain
 {
-    class Program
+    internal class Program
     {
-        const string myName = "Icer(Miner)";
-        const string AliceName = "Alice";
-        const string BobName = "Bob";
-        static void Main(string[] args)
+        private const string myName = "Icer(Miner)";
+        private const string AliceName = "Alice";
+        private const string BobName = "Bob";
+
+        private static void Main(string[] args)
         {
             Console.WriteLine($"Press any key to stop....");
             var engine = new Engine(myName);
-            Console.WriteLine($"Genesis Block: {Core.BlockChain.GenesisBlock}");
+            Console.WriteLine($"Genesis Block: {BlockChain.GenesisBlock}");
             engine.OnNewBlockCreated += Engine_OnNewBlockCreated;
 
             Console.ReadKey();

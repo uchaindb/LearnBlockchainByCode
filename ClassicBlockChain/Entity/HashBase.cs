@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace UChainDB.Example.BlockChain.Chain
+namespace UChainDB.Example.Chain.Entity
 {
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
     public abstract class HashBase : IHashObject

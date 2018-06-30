@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using UChainDB.Example.BlockChain.Chain;
+using UChainDB.Example.Chain.Entity;
 
-namespace UChainDB.Example.BlockChain.Core
+namespace UChainDB.Example.Chain.Core
 {
     public class BlockChain
     {
@@ -43,7 +42,7 @@ namespace UChainDB.Example.BlockChain.Core
         private ConcurrentQueue<Transaction> TransactionQueue { get; } = new ConcurrentQueue<Transaction>();
 
         internal bool ContainTransaction(UInt256 tranHash)
-            => TransactionToBlockDictionary.ContainsKey(tranHash);
+            => this.TransactionToBlockDictionary.ContainsKey(tranHash);
 
         public int TransactionQueueLength { get => this.TransactionQueue.Count; }
 

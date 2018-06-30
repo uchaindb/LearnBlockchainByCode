@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 
-namespace UChainDB.Example.BlockChain.Chain
+namespace UChainDB.Example.Chain.Entity
 {
     public class Transaction : HashBase
     {

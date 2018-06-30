@@ -1,4 +1,4 @@
-﻿namespace UChainDB.Example.BlockChain.Chain
+﻿namespace UChainDB.Example.Chain.Entity
 {
     public interface IHashObject
     {
