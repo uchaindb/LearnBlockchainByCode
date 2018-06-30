@@ -4,9 +4,9 @@ namespace UChainDB.Example.BlockChain.Chain
 {
     public static class Extension
     {
-        public static string ToShort(this UInt256 hash, int len = 7)
+        public static string ToShort(this UInt256 hash, int len = 10)
         {
-            return hash.ToBase64().Substring(0, len);
+            return hash.ToHex().Substring(0, len);
         }
 
         public static long ToUnixTimestamp(this DateTime time)

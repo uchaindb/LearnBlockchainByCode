@@ -10,7 +10,7 @@ namespace UChainDB.Example.BlockChain.Chain
         private UInt256 previousBlockHash;
         private DateTime time;
         private Transaction[] transactions = new Transaction[] { };
-        private ulong height;
+        private ulong nonce;
 
         public byte Version
         {
@@ -37,15 +37,26 @@ namespace UChainDB.Example.BlockChain.Chain
             set => this.SetPropertyField(ref this.transactions, value);
         }
 
-        public ulong Height
+        public ulong Nonce
         {
-            get => this.height;
-            set => this.SetPropertyField(ref this.height, value);
+            get => this.nonce;
+            set => this.SetPropertyField(ref this.nonce, value);
         }
 
-        protected internal override string HashContent => $"{this.Version}{this.Height}{this.PreviousBlockHash}{this.Time.ToUnixTimestamp()}{string.Join(",", this.Transactions?.Select(_ => _.Hash) ?? new UInt256[] { })}";
+        public override string ToString()
+        {
+            return this.DebuggerDisplay;
+        }
+
+        protected internal override string HashContent => $"{this.Version}{this.Nonce}{this.PreviousBlockHash}{this.Time.ToUnixTimestamp()}{string.Join(",", this.Transactions?.Select(_ => _.Hash) ?? new UInt256[] { })}";
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected override string DebuggerDisplay => $"{this.Height}: {this.Hash.ToShort()}";
+        protected override string DebuggerDisplay => $"{this.Hash.ToShort()}" +
+            $": (" +
+            $"N: {this.Nonce,8}" +
+            $", " +
+            $"T: {this.Transactions.Length}" +
+            $")\r\n" +
+            $"  {string.Join<Transaction>(Environment.NewLine + "  ", this.Transactions ?? new Transaction[] { })}";
     }
 }

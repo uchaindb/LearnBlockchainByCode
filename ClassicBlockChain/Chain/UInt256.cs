@@ -5,7 +5,7 @@ using System.Linq;
 namespace UChainDB.Example.BlockChain.Chain
 {
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
-    public class UInt256 : IComparable<UInt256> 
+    public class UInt256 : IComparable<UInt256>
     {
         public static readonly UInt256 Zero = new UInt256(Enumerable.Repeat((byte)0, 32).ToArray());
         private readonly byte[] data;
@@ -65,9 +65,14 @@ namespace UChainDB.Example.BlockChain.Chain
             return this.ToShort();
         }
 
-        public string ToBase64()
+        public string ToHex()
         {
-            return Convert.ToBase64String(this.data);
+            return BitConverter.ToString(this.data).Replace("-", string.Empty);
+        }
+
+        public byte[] ToBytes()
+        {
+            return this.data;
         }
 
         public int CompareTo(UInt256 other)
