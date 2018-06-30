@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace ClassicBlockChain
+namespace UChainDB.Example.BlockChain
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
         }
     }
 }
