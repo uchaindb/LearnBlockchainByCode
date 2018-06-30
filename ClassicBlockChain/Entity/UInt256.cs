@@ -38,9 +38,9 @@ namespace UChainDB.Example.Chain.Entity
             return value == null ? null : value.data;
         }
 
-        public static UInt256 Parse(string v)
+        public static UInt256 Parse(string str)
         {
-            return new UInt256(Convert.FromBase64String(v));
+            return new UInt256(Convert.FromBase64String(str));
         }
 
         public override bool Equals(object obj)
@@ -70,19 +70,9 @@ namespace UChainDB.Example.Chain.Entity
             return BitConverter.ToString(this.data).Replace("-", string.Empty);
         }
 
-        public byte[] ToBytes()
-        {
-            return this.data;
-        }
-
         public int CompareTo(UInt256 other)
         {
             return this.data.SequenceEqual(other.data) ? 0 : 1;
-        }
-
-        public byte[] Serialize()
-        {
-            return this.data;
         }
     }
 }

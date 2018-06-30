@@ -95,7 +95,7 @@ namespace UChainDB.Example.Chain.Core
             while (true)
             {
                 block.Nonce++;
-                if (block.Hash.ToBytes().Take(difficulty).All(_ => _ == 0))
+                if (((byte[])block.Hash).Take(difficulty).All(_ => _ == 0))
                 {
                     return block;
                 }
