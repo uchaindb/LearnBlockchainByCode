@@ -8,7 +8,7 @@ namespace UChainDB.Example.Chain.Entity
         private byte version;
         private string metaData;
         private UInt256[] inputTransactions = new UInt256[] { };
-        private TransactionOutput[] outputOwner = new TransactionOutput[] { };
+        private TransactionOutput[] outputOwners = new TransactionOutput[] { };
 
         public byte Version
         {
@@ -30,8 +30,8 @@ namespace UChainDB.Example.Chain.Entity
 
         public TransactionOutput[] OutputOwners
         {
-            get => this.outputOwner;
-            set => this.SetPropertyField(ref this.outputOwner, value);
+            get => this.outputOwners;
+            set => this.SetPropertyField(ref this.outputOwners, value);
         }
 
         public override string ToString()
