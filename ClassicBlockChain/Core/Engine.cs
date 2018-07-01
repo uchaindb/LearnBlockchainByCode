@@ -37,19 +37,16 @@ namespace UChainDB.Example.Chain.Core
 
         private void GenerateBlock(object state)
         {
-            while (true)
+            while (!this.disposing)
             {
-                if (this.disposing) return;
-                Thread.Sleep(10);
                 try
                 {
                     var vts = this.BlockChain.DequeueTransactions();
 
                     var finalTrans = new List<Transaction>();
 
-                    foreach (var vt in vts)
+                    foreach (var tran in vts)
                     {
-                        var tran = vt;
                         if (!this.BlockChain.ContainTransaction(tran.Hash))
                         {
                             finalTrans.Add(tran);
@@ -64,8 +61,6 @@ namespace UChainDB.Example.Chain.Core
                     var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
 
                     var prevBlock = this.BlockChain.Tail;
-                    var height = prevBlock.Nonce + 1;
-
                     var block = this.BlockChain.AddBlock(new Block
                     {
                         PreviousBlockHash = prevBlock.Hash,
