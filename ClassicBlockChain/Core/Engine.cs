@@ -20,7 +20,7 @@ namespace UChainDB.Example.Chain.Core
         {
             this.MinerName = minerName;
             this.BlockChain = new BlockChain();
-            this.thWorker = new Thread(this.GenerateBlock);
+            this.thWorker = new Thread(this.GenerateBlockThread);
             this.thWorker.Start();
         }
 
@@ -30,39 +30,13 @@ namespace UChainDB.Example.Chain.Core
             return transaction.Hash;
         }
 
-        private void GenerateBlock(object state)
+        private void GenerateBlockThread(object state)
         {
             while (!this.disposing)
             {
                 try
                 {
-                    var vts = this.BlockChain.DequeueTransactions();
-
-                    var finalTrans = new List<Transaction>();
-
-                    foreach (var tran in vts)
-                    {
-                        if (!this.BlockChain.ContainTransaction(tran.Hash))
-                        {
-                            finalTrans.Add(tran);
-                        }
-                    }
-
-                    var minerTran = new Transaction
-                    {
-                        OutputOwners = new[] { new TransactionOutput { Owner = this.MinerName, Value = this.BlockChain.RewardOfBlock } },
-                        MetaData = DateTime.Now.ToString(CultureInfo.InvariantCulture) + DateTime.Now.Ticks,
-                    };
-                    var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
-
-                    var prevBlock = this.BlockChain.Tail;
-                    var block = this.BlockChain.AddBlock(new Block
-                    {
-                        PreviousBlockHash = prevBlock.Hash,
-                        Time = DateTime.Now,
-                        Transactions = allTrans,
-                    });
-
+                    var block = this.GenerateBlock();
                     this.OnNewBlockCreated?.Invoke(this, block);
                 }
                 catch (Exception ex)
@@ -70,6 +44,34 @@ namespace UChainDB.Example.Chain.Core
                     Console.WriteLine($"Error when generating new block[{ex.Message}]");
                 }
             }
+        }
+
+        private Block GenerateBlock()
+        {
+            var finalTrans = this.BlockChain.DequeueTransactions()
+                .Where(this.ValidateTransaction)
+                .ToList();
+
+            var minerTran = new Transaction
+            {
+                OutputOwners = new[] { new TransactionOutput { Owner = this.MinerName, Value = this.BlockChain.RewardOfBlock } },
+                MetaData = DateTime.Now.Ticks.ToString(),
+            };
+            var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
+
+            var prevBlock = this.BlockChain.Tail;
+            var block = this.BlockChain.AddBlock(new Block
+            {
+                PreviousBlockHash = prevBlock.Hash,
+                Time = DateTime.Now,
+                Transactions = allTrans,
+            });
+            return block;
+        }
+
+        private bool ValidateTransaction(Transaction tran)
+        {
+            return !this.BlockChain.ContainTransaction(tran.Hash);
         }
 
         public void Dispose()
