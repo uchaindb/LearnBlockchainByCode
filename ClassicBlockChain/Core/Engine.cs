@@ -30,11 +30,6 @@ namespace UChainDB.Example.Chain.Core
             return transaction.Hash;
         }
 
-        internal void AppendBlocks(Block[] blocks)
-        {
-            this.InitBlocks(blocks);
-        }
-
         private void GenerateBlock(object state)
         {
             while (!this.disposing)
@@ -75,13 +70,6 @@ namespace UChainDB.Example.Chain.Core
                     Console.WriteLine($"Error when generating new block[{ex.Message}]");
                 }
             }
-        }
-
-        private void InitBlocks(Block[] blocks)
-        {
-            this.BlockChain.InitBlocks(blocks);
-
-            this.OnNewBlockCreated?.Invoke(this, null);
         }
 
         public void Dispose()
