@@ -9,7 +9,7 @@ namespace UChainDB.Example.Chain.Core
 {
     public class Engine : IDisposable
     {
-        public BlockChain BlockChain;
+        public readonly BlockChain BlockChain;
 
         private readonly Thread thWorker;
         private bool disposing = false;
