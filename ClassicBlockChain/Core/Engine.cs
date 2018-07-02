@@ -71,7 +71,8 @@ namespace UChainDB.Example.Chain.Core
 
         private bool ValidateTransaction(Transaction tran)
         {
-            return !this.BlockChain.ContainTransaction(tran.Hash);
+            return string.IsNullOrEmpty(tran.MetaData)
+                && !this.BlockChain.ContainTransaction(tran.Hash);
         }
 
         public void Dispose()
