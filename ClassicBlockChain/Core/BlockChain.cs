@@ -37,6 +37,8 @@ namespace UChainDB.Example.Chain.Core
             = new ConcurrentDictionary<UInt256, Block>();
         internal ConcurrentDictionary<UInt256, (Block head, int index)> TransactionToBlockDictionary { get; }
             = new ConcurrentDictionary<UInt256, (Block, int)>();
+        internal ConcurrentDictionary<UInt256, byte> UsedTransactionDictionary { get; }
+            = new ConcurrentDictionary<UInt256, byte>();
         public int Height => this.BlockDictionary.Count;
         public Block Tail { get; set; }
         private ConcurrentQueue<Transaction> TransactionQueue { get; } = new ConcurrentQueue<Transaction>();
@@ -74,6 +76,17 @@ namespace UChainDB.Example.Chain.Core
             }
 
             return (true, null);
+        }
+
+        internal bool ContainUsedTransactions(UInt256[] inputTransactions)
+        {
+            foreach (var tran in inputTransactions)
+            {
+                if (this.UsedTransactionDictionary.TryGetValue(tran, out var _))
+                    return true;
+            }
+
+            return false;
         }
 
         internal void InitBlocks(params Block[] blocks)
@@ -149,6 +162,10 @@ namespace UChainDB.Example.Chain.Core
                     {
                         var tran = block.Transactions[i];
                         this.TransactionToBlockDictionary[tran.Hash] = (cursor, i);
+                        foreach (var usedTx in tran.InputTransactions ?? new UInt256[] { })
+                        {
+                            this.UsedTransactionDictionary[usedTx] = 0;
+                        }
                     }
                 }
 
