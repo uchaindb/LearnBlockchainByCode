@@ -44,8 +44,6 @@ namespace UChainDB.Example.Chain.Core
         internal bool ContainTransaction(UInt256 tranHash)
             => this.TransactionToBlockDictionary.ContainsKey(tranHash);
 
-        public int TransactionQueueLength { get => this.TransactionQueue.Count; }
-
         internal void AddTransaction(Transaction transaction)
         {
             var (ret, error) = this.CheckQueueOfTransaction(transaction);
@@ -127,11 +125,6 @@ namespace UChainDB.Example.Chain.Core
             }
 
             return this.BlockDictionary[tranref.head.Hash]?.Transactions[tranref.index];
-        }
-
-        internal Block GetBlock(UInt256 hash)
-        {
-            return this.BlockDictionary[hash];
         }
 
         private void MaintainBlockChain(Block newTail)
