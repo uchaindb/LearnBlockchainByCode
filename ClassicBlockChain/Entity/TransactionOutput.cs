@@ -1,13 +1,17 @@
-﻿namespace UChainDB.Example.Chain.Entity
+﻿using System;
+
+namespace UChainDB.Example.Chain.Entity
 {
     public class TransactionOutput
     {
-        public string Owner { get; set; }
+        public byte[] Address { get; set; }
         public int Value { get; set; }
 
-        public override string ToString()
-        {
-            return $"{this.Owner}: {this.Value}";
-        }
+        internal string HashContent => $"{this.Value}" +
+            $"|{Convert.ToBase64String(this.Address)}";
+
+        public override string ToString() =>
+                    $"{this.Value}" +
+            $": {Convert.ToBase64String(this.Address).Substring(0, 12)}";
     }
 }

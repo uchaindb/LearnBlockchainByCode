@@ -1,63 +1,39 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using UChainDB.Example.Chain.Utility;
 
 namespace UChainDB.Example.Chain.Entity
 {
-    public class Block : HashBase
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
+    public class Block : IHashObject
     {
-        private byte version;
-        private UInt256 previousBlockHash;
-        private DateTime time;
-        private Transaction[] transactions = new Transaction[] { };
-        private uint nonce;
-
-        public byte Version
+        public Block()
         {
-            get => this.version;
-            set => this.SetPropertyField(ref this.version, value);
         }
 
-        public UInt256 PreviousBlockHash
+        public Block(BlockHead head, Transaction[] transactions)
         {
-            get => this.previousBlockHash;
-            set => this.SetPropertyField(ref this.previousBlockHash, value);
-        }
+            this.Head = head;
+            this.Transactions = transactions;
 
-        public DateTime Time
-        {
-            get => this.time;
-            set => this.SetPropertyField(ref this.time, value);
+            // verification
+            if (this.Head.MerkleRoot != null)
+            {
+                var tranHashList = this.Transactions.Select(_ => _.Hash).ToArray();
+                var tranRoot = MerkleTree.GetMerkleRoot(tranHashList);
+                if (tranRoot != this.Head.MerkleRoot)
+                    throw new ArgumentException($"hash of transaction list [{tranRoot}] not equal to the one in header [{this.Head.MerkleRoot}]");
+            }
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public Transaction[] Transactions
-        {
-            get => this.transactions;
-            set => this.SetPropertyField(ref this.transactions, value);
-        }
+        public Transaction[] Transactions { get; set; } = new Transaction[] { };
 
-        public uint Nonce
-        {
-            get => this.nonce;
-            set => this.SetPropertyField(ref this.nonce, value);
-        }
+        public BlockHead Head { get; set; }
 
-        public override string ToString()
-        {
-            return this.DebuggerDisplay;
-        }
-
-        protected internal override string HashContent => $"{this.Version}{this.Nonce}{this.PreviousBlockHash}{this.Time.ToUnixTimestamp()}{string.Join(",", this.Transactions?.Select(_ => _.Hash) ?? new UInt256[] { })}";
+        public UInt256 Hash { get => this.Head?.Hash; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected override string DebuggerDisplay => $"{this.Hash.ToShort()}" +
-            $": (" +
-            $"N: {this.Nonce,8}" +
-            $", " +
-            $"T: {this.Transactions.Length}" +
-            $")\r\n" +
-            $"  {string.Join<Transaction>(Environment.NewLine + "  ", this.Transactions ?? new Transaction[] { })}";
+        protected string DebuggerDisplay => $"{this.Head?.Hash}: {this.Transactions.Length} transactions";
     }
 }
