@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using UChainDB.Example.Chain.Utility;
 
 namespace UChainDB.Example.Chain.Entity
 {

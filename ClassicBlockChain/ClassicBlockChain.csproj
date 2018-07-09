@@ -6,4 +6,8 @@
     <RootNamespace>UChainDB.Example.Chain</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="UChainDB.ChainEngine.Cryptography.EcDsa.Secp256k1" Version="1.0.0" />
+  </ItemGroup>
+
 </Project>

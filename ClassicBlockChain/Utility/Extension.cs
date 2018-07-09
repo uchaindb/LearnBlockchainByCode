@@ -1,6 +1,7 @@
 ﻿using System;
+using UChainDB.Example.Chain.Entity;
 
-namespace UChainDB.Example.Chain.Entity
+namespace UChainDB.Example.Chain.Utility
 {
     public static class Extension
     {
