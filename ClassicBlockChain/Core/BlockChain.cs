@@ -10,18 +10,24 @@ namespace UChainDB.Example.Chain.Core
     {
         static BlockChain()
         {
-            GenesisBlock = FindValidBlock(new Block
+            GenesisBlockHead = FindValidBlock(new BlockHead
             {
                 PreviousBlockHash = null,
                 Time = new DateTime(2017, 6, 30, 9, 0, 0, DateTimeKind.Utc),
                 Version = BlockChainVersion,
-                Transactions = new Transaction[] { },
+                MerkleRoot = UInt256.Zero,
             }, Difficulty);
+            GenesisBlock = new Block
+            {
+                Head = GenesisBlockHead,
+                Transactions = new Transaction[] { },
+            };
         }
 
         private const byte Difficulty = 2;
         private const byte BlockChainVersion = 1;
 
+        public static readonly BlockHead GenesisBlockHead;
         public static readonly Block GenesisBlock;
 
         private readonly int MaxTransactionNumberInBlock = 1000;
@@ -29,18 +35,20 @@ namespace UChainDB.Example.Chain.Core
 
         public BlockChain()
         {
-            this.InitBlocks(GenesisBlock);
-            this.Tail = GenesisBlock;
+            this.InitBlocks(GenesisBlockHead);
+            this.Tail = GenesisBlockHead;
         }
 
+        public ConcurrentDictionary<UInt256, BlockHead> BlockHeadDictionary { get; }
+            = new ConcurrentDictionary<UInt256, BlockHead>();
         public ConcurrentDictionary<UInt256, Block> BlockDictionary { get; }
             = new ConcurrentDictionary<UInt256, Block>();
-        internal ConcurrentDictionary<UInt256, (Block head, int index)> TransactionToBlockDictionary { get; }
-            = new ConcurrentDictionary<UInt256, (Block, int)>();
-        internal ConcurrentDictionary<UInt256, byte> UsedTransactionDictionary { get; }
-            = new ConcurrentDictionary<UInt256, byte>();
-        public int Height => this.BlockDictionary.Count;
-        public Block Tail { get; set; }
+        internal ConcurrentDictionary<UInt256, (BlockHead head, int index)> TransactionToBlockDictionary { get; }
+            = new ConcurrentDictionary<UInt256, (BlockHead, int)>();
+        internal ConcurrentDictionary<(UInt256, int), byte> UsedTransactionDictionary { get; }
+            = new ConcurrentDictionary<(UInt256, int), byte>();
+        public int Height => this.BlockHeadDictionary.Count;
+        public BlockHead Tail { get; set; }
         private ConcurrentQueue<Transaction> TransactionQueue { get; } = new ConcurrentQueue<Transaction>();
 
         internal bool ContainTransaction(UInt256 tranHash)
@@ -54,13 +62,16 @@ namespace UChainDB.Example.Chain.Core
             this.TransactionQueue.Enqueue(transaction);
         }
 
-        internal Block AddBlock(Block block)
+        internal BlockHead AddBlock(Block block)
         {
-            block.Version = BlockChainVersion;
-            block = FindValidBlock(block, Difficulty);
+            var blockhead = block.Head;
 
-            this.InitBlocks(block);
-            return block;
+            blockhead.Version = BlockChainVersion;
+            blockhead = FindValidBlock(blockhead, Difficulty);
+
+            this.BlockDictionary[block.Hash] = block;
+            this.InitBlocks(blockhead);
+            return blockhead;
         }
 
         private (bool ret, string error) CheckQueueOfTransaction(Transaction transaction)
@@ -78,28 +89,28 @@ namespace UChainDB.Example.Chain.Core
             return (true, null);
         }
 
-        internal bool ContainUsedTransactions(UInt256[] inputTransactions)
+        internal bool ContainUsedTransactions(TransactionInput[] inputTransactions)
         {
             foreach (var tran in inputTransactions)
             {
-                if (this.UsedTransactionDictionary.TryGetValue(tran, out var _))
+                if (this.UsedTransactionDictionary.TryGetValue((tran.PrevTransactionHash, tran.PrevTransactionIndex), out var _))
                     return true;
             }
 
             return false;
         }
 
-        internal void InitBlocks(params Block[] blocks)
+        internal void InitBlocks(params BlockHead[] blocks)
         {
             foreach (var block in blocks)
             {
-                this.BlockDictionary[block.Hash] = block;
+                this.BlockHeadDictionary[block.Hash] = block;
             }
 
             this.MaintainBlockChain(blocks.Last());
         }
 
-        private static Block FindValidBlock(Block originBlock, int difficulty)
+        private static BlockHead FindValidBlock(BlockHead originBlock, int difficulty)
         {
             var block = originBlock;
             block.Nonce = 0;
@@ -140,15 +151,20 @@ namespace UChainDB.Example.Chain.Core
             return this.BlockDictionary[tranref.head.Hash]?.Transactions[tranref.index];
         }
 
-        private void MaintainBlockChain(Block newTail)
+        internal Block GetBlock(UInt256 hash)
+        {
+            return this.BlockDictionary[hash];
+        }
+
+        private void MaintainBlockChain(BlockHead newTail)
         {
             var prevTail = this.Tail;
 
             this.Tail = newTail;
-            if (this.Tail != prevTail) this.MaintainChainDictionary(GenesisBlock, this.Tail);
+            if (this.Tail != prevTail) this.MaintainChainDictionary(GenesisBlockHead, this.Tail);
         }
 
-        private void MaintainChainDictionary(Block from, Block to)
+        private void MaintainChainDictionary(BlockHead from, BlockHead to)
         {
             var cursor = to;
             while (cursor.Hash != from.Hash)
@@ -162,14 +178,14 @@ namespace UChainDB.Example.Chain.Core
                     {
                         var tran = block.Transactions[i];
                         this.TransactionToBlockDictionary[tran.Hash] = (cursor, i);
-                        foreach (var usedTx in tran.InputTransactions ?? new UInt256[] { })
+                        foreach (var usedTx in tran.InputTransactions ?? new TransactionInput[] { })
                         {
-                            this.UsedTransactionDictionary[usedTx] = 0;
+                            this.UsedTransactionDictionary[(usedTx.PrevTransactionHash, usedTx.PrevTransactionIndex)] = 0;
                         }
                     }
                 }
 
-                cursor = this.BlockDictionary[cursor.PreviousBlockHash];
+                cursor = this.BlockHeadDictionary[cursor.PreviousBlockHash];
             }
         }
     }

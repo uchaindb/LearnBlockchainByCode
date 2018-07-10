@@ -13,12 +13,12 @@ namespace UChainDB.Example.Chain.Core
 
         private readonly Thread thWorker;
         private bool disposing = false;
-        public event EventHandler<Block> OnNewBlockCreated;
-        private readonly string MinerName;
+        public event EventHandler<BlockHead> OnNewBlockCreated;
+        private readonly PublicKey MinerAddress;
 
-        public Engine(string minerName)
+        public Engine(string minerAddress)
         {
-            this.MinerName = minerName;
+            this.MinerAddress = PublicKey.ParseBase58(minerAddress);
             this.BlockChain = new BlockChain();
             this.thWorker = new Thread(this.GenerateBlockThread);
             this.thWorker.Start();
@@ -46,7 +46,7 @@ namespace UChainDB.Example.Chain.Core
             }
         }
 
-        private Block GenerateBlock()
+        private BlockHead GenerateBlock()
         {
             var finalTrans = this.BlockChain.DequeueTransactions()
                 .Where(this.ValidateTransaction)
@@ -54,16 +54,20 @@ namespace UChainDB.Example.Chain.Core
 
             var minerTran = new Transaction
             {
-                OutputOwners = new[] { new TransactionOutput { Owner = this.MinerName, Value = this.BlockChain.RewardOfBlock } },
-                MetaData = DateTime.Now.Ticks.ToString(),
+                OutputOwners = new[] { new TransactionOutput { PublicKey = this.MinerAddress, Value = this.BlockChain.RewardOfBlock } },
             };
             var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
 
             var prevBlock = this.BlockChain.Tail;
-            var block = this.BlockChain.AddBlock(new Block
-            {
+            var merkleRoot = MerkleTree.GetMerkleRoot(allTrans.Select(_ => _.Hash).ToArray());
+            var blockHead= new BlockHead {
                 PreviousBlockHash = prevBlock.Hash,
                 Time = DateTime.Now,
+                MerkleRoot = merkleRoot,
+            };
+            var block = this.BlockChain.AddBlock(new Block
+            {
+                Head = blockHead,
                 Transactions = allTrans,
             });
             return block;

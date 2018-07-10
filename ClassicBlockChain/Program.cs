@@ -7,16 +7,16 @@ namespace UChainDB.Example.Chain
 {
     internal class Program
     {
-        private const string myName = "Icer(Miner)";
-        private const string AliceName = "Alice";
-        private const string BobName = "Bob";
+        private static Individual me = new Individual("Icer(Miner)");
+        private static Individual alice = new Individual("Alice");
+        private static Individual bob = new Individual("Bob");
 
         private static Transaction h2utxo = null;
 
         private static void Main(string[] args)
         {
             Console.WriteLine($"Press any key to stop....");
-            var engine = new Engine(myName);
+            var engine = new Engine(me.PublicKey.ToBase58());
             Console.WriteLine($"Genesis Block: {BlockChain.GenesisBlock}");
             engine.OnNewBlockCreated += Engine_OnNewBlockCreated;
 
@@ -26,7 +26,7 @@ namespace UChainDB.Example.Chain
             Console.ReadKey();
         }
 
-        private static void Engine_OnNewBlockCreated(object sender, Block block)
+        private static void Engine_OnNewBlockCreated(object sender, BlockHead block)
         {
             var engine = sender as Engine;
             var height = engine.BlockChain.Height;
@@ -34,35 +34,21 @@ namespace UChainDB.Example.Chain
 
             if (height == 2)
             {
-                var utxo = engine.BlockChain.Tail.Transactions.First();
+                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Transactions.First();
                 h2utxo = utxo;
-                SendMoney(engine, utxo, AliceName, 50);
+                me.SendMoney(engine, utxo, 0, alice, 50);
             }
             else if (height == 3)
             {
-                var utxo = engine.BlockChain.Tail.Transactions
-                    .First(txs => txs.OutputOwners.Any(_ => _.Owner == AliceName));
-                SendMoney(engine, utxo, BobName, 50);
+                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Transactions
+                    .First(txs => txs.OutputOwners.Any(_ => _.PublicKey == alice.PublicKey));
+                alice.SendMoney(engine, utxo, 0, bob, 50);
             }
             else if (height == 4)
             {
                 // try to use used transaction which cannot pass validation and ignored
-                SendMoney(engine, h2utxo, BobName, 50);
+                me.SendMoney(engine, h2utxo, 0, bob, 50);
             }
-        }
-
-        private static void SendMoney(Engine engine, Transaction utxo, string receiver, int value)
-        {
-            SendMoney(engine, utxo, new TransactionOutput { Owner = receiver, Value = value });
-        }
-
-        private static void SendMoney(Engine engine, Transaction utxo, params TransactionOutput[] outputs)
-        {
-            engine.AttachTransaction(new Transaction
-            {
-                InputTransactions = new[] { utxo.Hash },
-                OutputOwners = outputs,
-            });
         }
     }
 }

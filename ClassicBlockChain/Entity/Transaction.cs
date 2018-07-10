@@ -43,7 +43,7 @@ namespace UChainDB.Example.Chain.Entity
             $"{this.Hash.ToShort()}: " +
             $"({string.Join(",", this.OutputOwners?.Select(_ => _.ToString()) ?? new string[] { })}) <-- " +
             ((this.InputTransactions != null && this.InputTransactions.Length > 0)
-                ? $"({string.Join(",", this.InputTransactions.Select(_ => _.ToShort()))})"
+                ? $"({string.Join(",", this.InputTransactions.Select(_ => _.ToString()))})"
                 : $"(Coin Base)");
     }
 }
