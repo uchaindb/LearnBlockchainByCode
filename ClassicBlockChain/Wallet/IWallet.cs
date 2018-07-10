@@ -11,7 +11,7 @@ namespace UChainDB.Example.Chain
 
         void SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value);
 
-        void SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TransactionOutput[] outputs);
+        void SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs);
 
         void GenerateKeyPair();
     }

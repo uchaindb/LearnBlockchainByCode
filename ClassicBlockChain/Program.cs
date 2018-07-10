@@ -35,14 +35,14 @@ namespace UChainDB.Example.Chain
 
             if (height == 2)
             {
-                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Transactions.First();
+                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Txs.First();
                 h2utxo = utxo;
                 me.SendMoney(engine, utxo, 0, alice, 50);
             }
             else if (height == 3)
             {
-                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Transactions
-                    .First(txs => txs.OutputOwners.Any(_ => _.PublicKey == alice.PublicKey));
+                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Txs
+                    .First(txs => txs.Outputs.Any(_ => _.PublicKey == alice.PublicKey));
                 alice.SendMoney(engine, utxo, 0, bob, 50);
             }
             else if (height == 4)

@@ -27,10 +27,10 @@ namespace UChainDB.Example.Chain.Core
             this.thWorker.Start();
         }
 
-        public UInt256 AttachTransaction(Transaction transaction)
+        public UInt256 AttachTx(Transaction tx)
         {
-            this.BlockChain.AddTransaction(transaction);
-            return transaction.Hash;
+            this.BlockChain.AddTx(tx);
+            return tx.Hash;
         }
 
         private void GenerateBlockThread(object state)
@@ -51,19 +51,19 @@ namespace UChainDB.Example.Chain.Core
 
         private BlockHead GenerateBlock()
         {
-            var finalTrans = this.BlockChain.DequeueTransactions()
-                .Where(this.ValidateTransaction)
+            var finalTxs = this.BlockChain.DequeueTxs()
+                .Where(this.ValidateTx)
                 .ToList();
 
             this.MinerWallet.GenerateKeyPair();
-            var minerTran = new Transaction
+            var minerTx = new Transaction
             {
-                OutputOwners = new[] { new TransactionOutput { PublicKey = this.MinerWallet.PublicKey, Value = this.BlockChain.RewardOfBlock } },
+                Outputs = new[] { new TxOutput { PublicKey = this.MinerWallet.PublicKey, Value = this.BlockChain.RewardOfBlock } },
             };
-            var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
+            var allTxs = new[] { minerTx }.Concat(finalTxs).ToArray();
 
             var prevBlock = this.BlockChain.Tail;
-            var merkleRoot = MerkleTree.GetMerkleRoot(allTrans.Select(_ => _.Hash).ToArray());
+            var merkleRoot = MerkleTree.GetMerkleRoot(allTxs.Select(_ => _.Hash).ToArray());
             var blockHead = new BlockHead
             {
                 PreviousBlockHash = prevBlock.Hash,
@@ -73,27 +73,27 @@ namespace UChainDB.Example.Chain.Core
             var block = this.BlockChain.AddBlock(new Block
             {
                 Head = blockHead,
-                Transactions = allTrans,
+                Txs = allTxs,
             });
             return block;
         }
 
-        private bool ValidateTransaction(Transaction tran)
+        private bool ValidateTx(Transaction tx)
         {
-            if (this.BlockChain.ContainTransaction(tran.Hash)) return false;
-            if (this.BlockChain.ContainUsedTransactions(tran.InputTransactions)) return false;
-            foreach (var intx in tran.InputTransactions)
+            if (this.BlockChain.ContainTx(tx.Hash)) return false;
+            if (this.BlockChain.ContainUsedTxs(tx.InputTxs)) return false;
+            foreach (var intx in tx.InputTxs)
             {
-                var output = this.BlockChain.GetTransaction(intx.PrevTransactionHash).OutputOwners[intx.PrevTransactionIndex];
-                var verifyTransaction = new Transaction
+                var output = this.BlockChain.GetTx(intx.PrevTxHash).Outputs[intx.PrevTxIndex];
+                var verifyTx = new Transaction
                 {
-                    Version = tran.Version,
-                    InputTransactions = tran.InputTransactions
-                        .Select(_ => new TransactionInput { PrevTransactionHash = _.PrevTransactionHash, PrevTransactionIndex = _.PrevTransactionIndex })
+                    Version = tx.Version,
+                    InputTxs = tx.InputTxs
+                        .Select(_ => new TxInput { PrevTxHash = _.PrevTxHash, PrevTxIndex = _.PrevTxIndex })
                         .ToArray(),
-                    OutputOwners = tran.OutputOwners.ToArray(),
+                    Outputs = tx.Outputs.ToArray(),
                 };
-                if (!this.signAlgo.Verify(new[] { Encoding.UTF8.GetBytes(verifyTransaction.HashContent) }, output.PublicKey, intx.Signature))
+                if (!this.signAlgo.Verify(new[] { Encoding.UTF8.GetBytes(verifyTx.HashContent) }, output.PublicKey, intx.Signature))
                     return false;
             }
             return true;

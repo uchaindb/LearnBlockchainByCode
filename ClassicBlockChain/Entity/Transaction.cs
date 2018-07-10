@@ -7,9 +7,8 @@ namespace UChainDB.Example.Chain.Entity
     public class Transaction : HashBase
     {
         private byte version;
-        private string metaData;
-        private TransactionInput[] inputTransactions = new TransactionInput[] { };
-        private TransactionOutput[] outputOwners = new TransactionOutput[] { };
+        private TxInput[] inputTxs = new TxInput[] { };
+        private TxOutput[] outputs = new TxOutput[] { };
 
         public byte Version
         {
@@ -17,16 +16,16 @@ namespace UChainDB.Example.Chain.Entity
             set => this.SetPropertyField(ref this.version, value);
         }
 
-        public TransactionInput[] InputTransactions
+        public TxInput[] InputTxs
         {
-            get => this.inputTransactions;
-            set => this.SetPropertyField(ref this.inputTransactions, value);
+            get => this.inputTxs;
+            set => this.SetPropertyField(ref this.inputTxs, value);
         }
 
-        public TransactionOutput[] OutputOwners
+        public TxOutput[] Outputs
         {
-            get => this.outputOwners;
-            set => this.SetPropertyField(ref this.outputOwners, value);
+            get => this.outputs;
+            set => this.SetPropertyField(ref this.outputs, value);
         }
 
         public override string ToString()
@@ -35,15 +34,15 @@ namespace UChainDB.Example.Chain.Entity
         }
 
         protected internal override string HashContent => $"{this.Version}" +
-            $"|{string.Join(",", this.InputTransactions?.Select(_ => _.HashContent) ?? new string[] { })}" +
-            $"|{string.Join(",", this.OutputOwners?.Select(_ => _.HashContent) ?? new string[] { })}";
+            $"|{string.Join(",", this.InputTxs?.Select(_ => _.HashContent) ?? new string[] { })}" +
+            $"|{string.Join(",", this.Outputs?.Select(_ => _.HashContent) ?? new string[] { })}";
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected override string DebuggerDisplay => $"" +
             $"{this.Hash.ToShort()}: " +
-            $"({string.Join(",", this.OutputOwners?.Select(_ => _.ToString()) ?? new string[] { })}) <-- " +
-            ((this.InputTransactions != null && this.InputTransactions.Length > 0)
-                ? $"({string.Join(",", this.InputTransactions.Select(_ => _.ToString()))})"
+            $"({string.Join(",", this.Outputs?.Select(_ => _.ToString()) ?? new string[] { })}) <-- " +
+            ((this.InputTxs != null && this.InputTxs.Length > 0)
+                ? $"({string.Join(",", this.InputTxs.Select(_ => _.ToString()))})"
                 : $"(Coin Base)");
     }
 }

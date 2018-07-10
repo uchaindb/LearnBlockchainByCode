@@ -2,7 +2,7 @@
 
 namespace UChainDB.Example.Chain.Entity
 {
-    public class TransactionOutput
+    public class TxOutput
     {
         public PublicKey PublicKey { get; set; }
         public int Value { get; set; }

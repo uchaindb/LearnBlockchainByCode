@@ -33,33 +33,33 @@ namespace UChainDB.Example.Chain
             SendMoney(
                 engine,
                 new[] { (utxo, index) },
-                new TransactionOutput { PublicKey = receiver.PublicKey, Value = value });
+                new TxOutput { PublicKey = receiver.PublicKey, Value = value });
         }
 
-        public void SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TransactionOutput[] outputs)
+        public void SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs)
         {
-            var inputTrans = utxos
-                .Select(_ => new TransactionInput { PrevTransactionHash = _.utxo.Hash, PrevTransactionIndex = _.idx })
+            var inputTxs = utxos
+                .Select(_ => new TxInput { PrevTxHash = _.utxo.Hash, PrevTxIndex = _.idx })
                 .ToArray();
-            var tran = new Transaction
+            var tx = new Transaction
             {
-                InputTransactions = inputTrans,
-                OutputOwners = outputs,
+                InputTxs = inputTxs,
+                Outputs = outputs,
             };
-            var sigList = new Signature[tran.InputTransactions.Length];
-            for (int i = 0; i < tran.InputTransactions.Length; i++)
+            var sigList = new Signature[tx.InputTxs.Length];
+            for (int i = 0; i < tx.InputTxs.Length; i++)
             {
                 var utxoEnt = utxos[i];
                 sigList[i] = this.signAlgo.Sign(
-                    new[] { Encoding.UTF8.GetBytes(tran.HashContent) },
-                    FindPrivateKey(utxoEnt.utxo.OutputOwners[utxoEnt.idx].PublicKey));
+                    new[] { Encoding.UTF8.GetBytes(tx.HashContent) },
+                    FindPrivateKey(utxoEnt.utxo.Outputs[utxoEnt.idx].PublicKey));
             }
 
-            for (int i = 0; i < tran.InputTransactions.Length; i++)
+            for (int i = 0; i < tx.InputTxs.Length; i++)
             {
-                tran.InputTransactions[i].Signature = sigList[i];
+                tx.InputTxs[i].Signature = sigList[i];
             }
-            engine.AttachTransaction(tran);
+            engine.AttachTx(tx);
         }
 
         protected virtual void AfterKeyPairGenerated()
