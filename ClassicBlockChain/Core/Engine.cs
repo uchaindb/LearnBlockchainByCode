@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using UChainDB.Example.Chain.Entity;
+using UChainDB.Example.Chain.Utility;
 
 namespace UChainDB.Example.Chain.Core
 {
@@ -15,6 +17,7 @@ namespace UChainDB.Example.Chain.Core
         private bool disposing = false;
         public event EventHandler<BlockHead> OnNewBlockCreated;
         private readonly IWallet MinerWallet;
+        private readonly ISignAlgorithm signAlgo = new ECDsaSignAlgorithm();
 
         public Engine(IWallet minerWallet)
         {
@@ -77,8 +80,23 @@ namespace UChainDB.Example.Chain.Core
 
         private bool ValidateTransaction(Transaction tran)
         {
-            return !this.BlockChain.ContainTransaction(tran.Hash)
-                && !this.BlockChain.ContainUsedTransactions(tran.InputTransactions);
+            if (this.BlockChain.ContainTransaction(tran.Hash)) return false;
+            if (this.BlockChain.ContainUsedTransactions(tran.InputTransactions)) return false;
+            foreach (var intx in tran.InputTransactions)
+            {
+                var output = this.BlockChain.GetTransaction(intx.PrevTransactionHash).OutputOwners[intx.PrevTransactionIndex];
+                var verifyTransaction = new Transaction
+                {
+                    Version = tran.Version,
+                    InputTransactions = tran.InputTransactions
+                        .Select(_ => new TransactionInput { PrevTransactionHash = _.PrevTransactionHash, PrevTransactionIndex = _.PrevTransactionIndex })
+                        .ToArray(),
+                    OutputOwners = tran.OutputOwners.ToArray(),
+                };
+                if (!this.signAlgo.Verify(new[] { Encoding.UTF8.GetBytes(verifyTransaction.HashContent) }, output.PublicKey, intx.Signature))
+                    return false;
+            }
+            return true;
         }
 
         public void Dispose()
