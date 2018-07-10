@@ -7,16 +7,16 @@ namespace UChainDB.Example.Chain
 {
     internal class Program
     {
-        private static Individual me = new Individual("Icer(Miner)");
-        private static Individual alice = new Individual("Alice");
-        private static Individual bob = new Individual("Bob");
+        private static IWallet me = new DeterministicWallet("Icer(Miner)");
+        private static IWallet alice = new SimpleWallet("Alice");
+        private static IWallet bob = new SimpleWallet("Bob");
 
         private static Transaction h2utxo = null;
 
         private static void Main(string[] args)
         {
             Console.WriteLine($"Press any key to stop....");
-            var engine = new Engine(me.PublicKey.ToBase58());
+            var engine = new Engine(me);
             Console.WriteLine($"Genesis Block: {BlockChain.GenesisBlock}");
             engine.OnNewBlockCreated += Engine_OnNewBlockCreated;
 

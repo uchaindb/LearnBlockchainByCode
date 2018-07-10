@@ -14,11 +14,11 @@ namespace UChainDB.Example.Chain.Core
         private readonly Thread thWorker;
         private bool disposing = false;
         public event EventHandler<BlockHead> OnNewBlockCreated;
-        private readonly PublicKey MinerAddress;
+        private readonly IWallet MinerWallet;
 
-        public Engine(string minerAddress)
+        public Engine(IWallet minerWallet)
         {
-            this.MinerAddress = PublicKey.ParseBase58(minerAddress);
+            this.MinerWallet = minerWallet;
             this.BlockChain = new BlockChain();
             this.thWorker = new Thread(this.GenerateBlockThread);
             this.thWorker.Start();
@@ -52,15 +52,17 @@ namespace UChainDB.Example.Chain.Core
                 .Where(this.ValidateTransaction)
                 .ToList();
 
+            this.MinerWallet.GenerateKeyPair();
             var minerTran = new Transaction
             {
-                OutputOwners = new[] { new TransactionOutput { PublicKey = this.MinerAddress, Value = this.BlockChain.RewardOfBlock } },
+                OutputOwners = new[] { new TransactionOutput { PublicKey = this.MinerWallet.PublicKey, Value = this.BlockChain.RewardOfBlock } },
             };
             var allTrans = new[] { minerTran }.Concat(finalTrans).ToArray();
 
             var prevBlock = this.BlockChain.Tail;
             var merkleRoot = MerkleTree.GetMerkleRoot(allTrans.Select(_ => _.Hash).ToArray());
-            var blockHead= new BlockHead {
+            var blockHead = new BlockHead
+            {
                 PreviousBlockHash = prevBlock.Hash,
                 Time = DateTime.Now,
                 MerkleRoot = merkleRoot,
