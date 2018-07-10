@@ -7,7 +7,7 @@ namespace UChainDB.Example.Chain.Entity
     {
         public UInt256 PrevTransactionHash { get; set; }
         public int PrevTransactionIndex { get; set; }
-        public byte[] Signature { get; set; }
+        public byte[] Signature { get; set; } = new byte[] { };
 
         internal string HashContent => $"{this.PrevTransactionHash.ToHex()}" +
             $"|{this.PrevTransactionIndex}" +

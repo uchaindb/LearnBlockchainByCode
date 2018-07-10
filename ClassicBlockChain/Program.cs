@@ -30,7 +30,8 @@ namespace UChainDB.Example.Chain
         {
             var engine = sender as Engine;
             var height = engine.BlockChain.Height;
-            Console.WriteLine($"New block created at height[{height:0000}]: {engine.BlockChain.Tail}");
+            var tailBlock = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash);
+            Console.WriteLine($"New block created at height[{height:0000}]: {tailBlock}");
 
             if (height == 2)
             {

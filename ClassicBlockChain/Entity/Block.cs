@@ -34,6 +34,10 @@ namespace UChainDB.Example.Chain.Entity
         public UInt256 Hash { get => this.Head?.Hash; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected string DebuggerDisplay => $"{this.Head?.Hash}: {this.Transactions.Length} transactions";
+        protected string DebuggerDisplay =>
+            $"{this.Head} [{this.Transactions.Length} txs]\r\n" +
+            $"{string.Join(Environment.NewLine, this.Transactions?.Select(_ => _.ToString()) ?? new string[] { })}";
+
+        public override string ToString() => this.DebuggerDisplay;
     }
 }
