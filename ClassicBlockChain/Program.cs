@@ -11,7 +11,7 @@ namespace UChainDB.Example.Chain
         private static IWallet alice = new SimpleWallet("Alice");
         private static IWallet bob = new SimpleWallet("Bob");
 
-        private static Transaction h2utxo = null;
+        private static (Transaction, int) h2utxo = (null, 0);
 
         private static void Main(string[] args)
         {
@@ -35,20 +35,21 @@ namespace UChainDB.Example.Chain
 
             if (height == 2)
             {
-                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Txs.First();
+                var utxos = me.GetUtxos(engine);
+                var utxo = utxos.First();
                 h2utxo = utxo;
-                me.SendMoney(engine, utxo, 0, alice, 50);
+                me.SendMoney(engine, utxo.tx, utxo.index, alice, 50);
             }
             else if (height == 3)
             {
-                var utxo = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash).Txs
-                    .First(txs => txs.Outputs.Any(_ => _.PublicKey == alice.PublicKey));
-                alice.SendMoney(engine, utxo, 0, bob, 50);
+                var utxos = alice.GetUtxos(engine);
+                var utxo = utxos.First();
+                alice.SendMoney(engine, utxo.tx, utxo.index, bob, 50);
             }
             else if (height == 4)
             {
                 // try to use used transaction which cannot pass validation and ignored
-                me.SendMoney(engine, h2utxo, 0, bob, 50);
+                me.SendMoney(engine, h2utxo.Item1, h2utxo.Item2, bob, 50);
             }
         }
     }

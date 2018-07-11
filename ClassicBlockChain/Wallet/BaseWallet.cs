@@ -62,6 +62,18 @@ namespace UChainDB.Example.Chain
             engine.AttachTx(tx);
         }
 
+        public (Transaction, int)[] GetUtxos(Engine engine)
+        {
+            var txlist = engine.BlockChain.TxToBlockDictionary
+                .Select(_ => engine.BlockChain.GetTx(_.Key))
+                .SelectMany(_ => _.Outputs.Select((txo, i) => new { tx = _, txo, i }))
+                .Where(_ => ContainPubKey(_.txo.PublicKey))
+                .Where(_ => !engine.BlockChain.UsedTxDictionary.ContainsKey((_.tx.Hash, _.i)))
+                .Select(_ => (_.tx, _.i))
+                .ToArray();
+            return txlist;
+        }
+
         protected virtual void AfterKeyPairGenerated()
         {
         }
@@ -71,6 +83,11 @@ namespace UChainDB.Example.Chain
             if (publicKey != this.PublicKey)
                 throw new KeyNotFoundException("corresponding public key is not right");
             return this.PrivateKey;
+        }
+
+        protected virtual bool ContainPubKey(PublicKey publicKey)
+        {
+            return publicKey == this.PublicKey;
         }
     }
 }

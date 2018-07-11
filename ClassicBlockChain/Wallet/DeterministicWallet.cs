@@ -27,5 +27,10 @@ namespace UChainDB.Example.Chain
                 throw new KeyNotFoundException("cannot find corresponding public key");
             return usedPrivateKeys[idx];
         }
+
+        protected override bool ContainPubKey(PublicKey publicKey)
+        {
+            return this.usedPublicKeys.Contains(publicKey);
+        }
     }
 }
