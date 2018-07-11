@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UChainDB.Example.Chain.Core;
@@ -10,6 +11,9 @@ namespace UChainDB.Example.Chain
     public abstract class BaseWallet : IWallet
     {
         protected ISignAlgorithm signAlgo = new ECDsaSignAlgorithm();
+
+        protected Dictionary<UInt256, BlockHead> blockHeads
+            = new Dictionary<UInt256, BlockHead>();
 
         public BaseWallet(string name)
         {
@@ -28,15 +32,15 @@ namespace UChainDB.Example.Chain
             this.AfterKeyPairGenerated();
         }
 
-        public void SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value)
+        public Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value)
         {
-            SendMoney(
+            return SendMoney(
                 engine,
                 new[] { (utxo, index) },
                 new TxOutput { PublicKey = receiver.PublicKey, Value = value });
         }
 
-        public void SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs)
+        public Transaction SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs)
         {
             var inputTxs = utxos
                 .Select(_ => new TxInput { PrevTxHash = _.utxo.Hash, PrevTxIndex = _.idx })
@@ -60,6 +64,8 @@ namespace UChainDB.Example.Chain
                 tx.InputTxs[i].Signature = sigList[i];
             }
             engine.AttachTx(tx);
+
+            return tx;
         }
 
         public (Transaction, int)[] GetUtxos(Engine engine)
@@ -72,6 +78,33 @@ namespace UChainDB.Example.Chain
                 .Select(_ => (_.tx, _.i))
                 .ToArray();
             return txlist;
+        }
+
+        public void SyncBlockHead(Engine engine)
+        {
+            var blocks = engine.BlockChain.BlockHeadDictionary.ToDictionary(_ => _.Key, _ => _.Value);
+            var newBlockHash = blocks.Select(_ => _.Key).ToArray();
+            var oldBlockHash = this.blockHeads.Select(_ => _.Key).ToArray();
+            var excepts = oldBlockHash.Except(newBlockHash).ToArray();
+            if (excepts.Length > 0)
+            {
+                Console.WriteLine($"found [{excepts.Length}] difference in sync block");
+                return;
+            }
+            this.blockHeads = blocks;
+        }
+
+        public bool VerifyTx(Engine engine, Transaction tx)
+        {
+            var (hs, flags, txnum, block) = engine.GetMerkleBlock(tx.Hash);
+
+            var merkleRoot = MerkleTree.GetPartialTreeRootHash(txnum, hs, flags);
+
+            // response block not exist in local blockchain
+            if (!this.blockHeads.ContainsKey(block.Hash)) return false;
+
+            var localBlock = this.blockHeads[block.Hash];
+            return merkleRoot == localBlock.MerkleRoot;
         }
 
         protected virtual void AfterKeyPairGenerated()

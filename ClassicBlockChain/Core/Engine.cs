@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -31,6 +32,16 @@ namespace UChainDB.Example.Chain.Core
         {
             this.BlockChain.AddTx(tx);
             return tx.Hash;
+        }
+
+        internal (UInt256[] hashes, BitArray flags, int txnum, BlockHead block) GetMerkleBlock(UInt256 txhash)
+        {
+            var (blockHead, txidx) = this.BlockChain.TxToBlockDictionary[txhash];
+            var block = this.BlockChain.GetBlock(blockHead.Hash);
+            var tree = new MerkleTree(block.Txs.Select(_ => _.Hash).ToArray());
+            var (hashes, flags) = tree.Trim(_ => _ == txhash);
+
+            return (hashes, flags, block.Txs.Length, blockHead);
         }
 
         private void GenerateBlockThread(object state)
