@@ -40,7 +40,7 @@ namespace UChainDB.Example.Chain
                 var utxos = me.GetUtxos(engine);
                 var utxo = utxos.First();
                 h2utxo = utxo;
-                me.SendMoney(engine, utxo.tx, utxo.index, alice, 50);
+                me.SendMoney(engine, utxo.tx, utxo.index, alice, 30, 1);
             }
             else if (height == 3)
             {
@@ -49,7 +49,7 @@ namespace UChainDB.Example.Chain
                 alice.SyncBlockHead(engine);
                 var verify = alice.VerifyTx(engine, utxo.tx);
                 Console.WriteLine($"verify [{utxo.tx.Hash.ToShort()}]: {verify}");
-                h3tx = alice.SendMoney(engine, utxo.tx, utxo.index, bob, 50);
+                h3tx = alice.SendMoney(engine, utxo.tx, utxo.index, bob, 20);
             }
             else if (height == 4)
             {

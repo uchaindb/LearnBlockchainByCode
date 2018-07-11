@@ -32,12 +32,13 @@ namespace UChainDB.Example.Chain
             this.AfterKeyPairGenerated();
         }
 
-        public Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value)
+        public Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value, int fee = 0)
         {
-            return SendMoney(
-                engine,
-                new[] { (utxo, index) },
-                new TxOutput { PublicKey = receiver.PublicKey, Value = value });
+            var total = utxo.Outputs[index].Value;
+            var change = total - value - fee;
+            var mainOutput = new TxOutput { PublicKey = receiver.PublicKey, Value = value };
+            var changeOutput = new TxOutput { PublicKey = this.PublicKey, Value = change };
+            return SendMoney( engine, new[] { (utxo, index) }, mainOutput, changeOutput);
         }
 
         public Transaction SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs)

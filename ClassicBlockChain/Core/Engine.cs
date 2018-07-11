@@ -66,10 +66,11 @@ namespace UChainDB.Example.Chain.Core
                 .Where(this.ValidateTx)
                 .ToList();
 
+            var fee = CollectFee(finalTxs);
             this.MinerWallet.GenerateKeyPair();
             var minerTx = new Transaction
             {
-                Outputs = new[] { new TxOutput { PublicKey = this.MinerWallet.PublicKey, Value = this.BlockChain.RewardOfBlock } },
+                Outputs = new[] { new TxOutput { PublicKey = this.MinerWallet.PublicKey, Value = this.BlockChain.RewardOfBlock + fee } },
             };
             var allTxs = new[] { minerTx }.Concat(finalTxs).ToArray();
 
@@ -108,6 +109,19 @@ namespace UChainDB.Example.Chain.Core
                     return false;
             }
             return true;
+        }
+
+        private int CollectFee(IEnumerable<Transaction> txs)
+        {
+            var input = 0;
+            var output = 0;
+            foreach (var tx in txs)
+            {
+                input += tx.InputTxs.Sum(_ => this.BlockChain.GetTx(_.PrevTxHash).Outputs[_.PrevTxIndex].Value);
+                output += tx.Outputs.Sum(_ => _.Value);
+            }
+
+            return input - output;
         }
 
         public void Dispose()
