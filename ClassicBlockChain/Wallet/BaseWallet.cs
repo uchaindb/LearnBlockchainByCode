@@ -38,13 +38,13 @@ namespace UChainDB.Example.Chain.Wallet
             var change = total - value - fee;
             var mainOutput = new TxOutput { PublicKey = receiver.PublicKey, Value = value };
             var changeOutput = new TxOutput { PublicKey = this.PublicKey, Value = change };
-            return this.SendMoney(engine, new[] { (utxo, index) }, mainOutput, changeOutput);
+            return this.SendMoney(engine, new[] { new Utxo(utxo, index) }, mainOutput, changeOutput);
         }
 
-        public Transaction SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs)
+        public Transaction SendMoney(Engine engine, Utxo[] utxos, params TxOutput[] outputs)
         {
             var inputTxs = utxos
-                .Select(_ => new TxInput { PrevTxHash = _.utxo.Hash, PrevTxIndex = _.idx })
+                .Select(_ => new TxInput { PrevTxHash = _.Tx.Hash, PrevTxIndex = _.Index })
                 .ToArray();
             var tx = new Transaction
             {
@@ -57,7 +57,7 @@ namespace UChainDB.Example.Chain.Wallet
                 var utxoEnt = utxos[i];
                 sigList[i] = this.signAlgo.Sign(
                     new[] { Encoding.UTF8.GetBytes(tx.HashContent) },
-                    this.FindPrivateKey(utxoEnt.utxo.Outputs[utxoEnt.idx].PublicKey));
+                    this.FindPrivateKey(utxoEnt.Tx.Outputs[utxoEnt.Index].PublicKey));
             }
 
             for (int i = 0; i < tx.InputTxs.Length; i++)
