@@ -112,16 +112,8 @@ namespace UChainDB.Example.Chain.Wallet
         {
         }
 
-        protected virtual PrivateKey FindPrivateKey(PublicKey publicKey)
-        {
-            if (publicKey != this.PublicKey)
-                throw new KeyNotFoundException("corresponding public key is not right");
-            return this.PrivateKey;
-        }
+        protected abstract PrivateKey FindPrivateKey(PublicKey publicKey);
 
-        protected virtual bool ContainPubKey(PublicKey publicKey)
-        {
-            return publicKey == this.PublicKey;
-        }
+        protected abstract bool ContainPubKey(PublicKey publicKey);
     }
 }
