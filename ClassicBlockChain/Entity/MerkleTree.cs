@@ -9,15 +9,12 @@
     {
         private MerkleTreeNode root;
 
-        public int TxNumber { get; }
-
         public MerkleTree(UInt256[] hashes)
         {
             if (hashes == null) throw new ArgumentNullException(nameof(hashes));
             if (hashes.Length == 0) throw new ArgumentOutOfRangeException("length greater than 0 is required", nameof(hashes));
 
             this.root = BuildTree(hashes.Select(p => new MerkleTreeNode(p)).ToArray());
-            this.TxNumber = hashes.Length;
         }
 
         public static UInt256 GetMerkleRoot(UInt256[] hashes)
