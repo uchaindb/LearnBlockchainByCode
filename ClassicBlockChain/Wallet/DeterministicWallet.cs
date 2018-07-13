@@ -6,11 +6,10 @@ namespace UChainDB.Example.Chain.Wallet
     public class DeterministicWallet : BaseWallet
     {
         private List<PublicKey> usedPublicKeys = new List<PublicKey>();
-
         private List<PrivateKey> usedPrivateKeys = new List<PrivateKey>();
 
         public DeterministicWallet(string name)
-                            : base(name)
+            : base(name)
         {
         }
 
