@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UChainDB.Example.Chain.Entity;
 
-namespace UChainDB.Example.Chain
+namespace UChainDB.Example.Chain.Wallet
 {
     public class DeterministicWallet : BaseWallet
     {
@@ -22,10 +22,10 @@ namespace UChainDB.Example.Chain
 
         protected override PrivateKey FindPrivateKey(PublicKey publicKey)
         {
-            var idx = usedPublicKeys.FindIndex(_ => _ == publicKey);
+            var idx = this.usedPublicKeys.FindIndex(_ => _ == publicKey);
             if (idx == -1)
                 throw new KeyNotFoundException("cannot find corresponding public key");
-            return usedPrivateKeys[idx];
+            return this.usedPrivateKeys[idx];
         }
 
         protected override bool ContainPubKey(PublicKey publicKey)

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using UChainDB.Example.Chain.Entity;
 using UChainDB.Example.Chain.Utility;
+using UChainDB.Example.Chain.Wallet;
 
 namespace UChainDB.Example.Chain.Core
 {

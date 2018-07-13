@@ -1,4 +1,4 @@
-﻿namespace UChainDB.Example.Chain
+﻿namespace UChainDB.Example.Chain.Wallet
 {
     public class SimpleWallet : BaseWallet
     {

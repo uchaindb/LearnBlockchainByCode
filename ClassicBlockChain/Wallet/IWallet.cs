@@ -1,7 +1,7 @@
 ﻿using UChainDB.Example.Chain.Core;
 using UChainDB.Example.Chain.Entity;
 
-namespace UChainDB.Example.Chain
+namespace UChainDB.Example.Chain.Wallet
 {
     public interface IWallet
     {
@@ -15,7 +15,7 @@ namespace UChainDB.Example.Chain
 
         void GenerateKeyPair();
 
-        (Transaction tx, int index)[] GetUtxos(Engine engine);
+        Utxo[] GetUtxos(Engine engine);
 
         void SyncBlockHead(Engine engine);
 

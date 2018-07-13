@@ -6,7 +6,7 @@ using UChainDB.Example.Chain.Core;
 using UChainDB.Example.Chain.Entity;
 using UChainDB.Example.Chain.Utility;
 
-namespace UChainDB.Example.Chain
+namespace UChainDB.Example.Chain.Wallet
 {
     public abstract class BaseWallet : IWallet
     {
@@ -15,7 +15,7 @@ namespace UChainDB.Example.Chain
         protected Dictionary<UInt256, BlockHead> blockHeads
             = new Dictionary<UInt256, BlockHead>();
 
-        public BaseWallet(string name)
+        protected BaseWallet(string name)
         {
             this.Name = name;
             this.GenerateKeyPair();
@@ -38,7 +38,7 @@ namespace UChainDB.Example.Chain
             var change = total - value - fee;
             var mainOutput = new TxOutput { PublicKey = receiver.PublicKey, Value = value };
             var changeOutput = new TxOutput { PublicKey = this.PublicKey, Value = change };
-            return SendMoney( engine, new[] { (utxo, index) }, mainOutput, changeOutput);
+            return this.SendMoney(engine, new[] { (utxo, index) }, mainOutput, changeOutput);
         }
 
         public Transaction SendMoney(Engine engine, (Transaction utxo, int idx)[] utxos, params TxOutput[] outputs)
@@ -57,7 +57,7 @@ namespace UChainDB.Example.Chain
                 var utxoEnt = utxos[i];
                 sigList[i] = this.signAlgo.Sign(
                     new[] { Encoding.UTF8.GetBytes(tx.HashContent) },
-                    FindPrivateKey(utxoEnt.utxo.Outputs[utxoEnt.idx].PublicKey));
+                    this.FindPrivateKey(utxoEnt.utxo.Outputs[utxoEnt.idx].PublicKey));
             }
 
             for (int i = 0; i < tx.InputTxs.Length; i++)
@@ -69,14 +69,14 @@ namespace UChainDB.Example.Chain
             return tx;
         }
 
-        public (Transaction, int)[] GetUtxos(Engine engine)
+        public Utxo[] GetUtxos(Engine engine)
         {
             var txlist = engine.BlockChain.TxToBlockDictionary
                 .Select(_ => engine.BlockChain.GetTx(_.Key))
                 .SelectMany(_ => _.Outputs.Select((txo, i) => new { tx = _, txo, i }))
-                .Where(_ => ContainPubKey(_.txo.PublicKey))
+                .Where(_ => this.ContainPubKey(_.txo.PublicKey))
                 .Where(_ => !engine.BlockChain.UsedTxDictionary.ContainsKey((_.tx.Hash, _.i)))
-                .Select(_ => (_.tx, _.i))
+                .Select(_ => new Utxo(_.tx, _.i))
                 .ToArray();
             return txlist;
         }
