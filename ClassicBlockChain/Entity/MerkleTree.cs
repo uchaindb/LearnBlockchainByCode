@@ -23,13 +23,6 @@
             return tree.root.Hash;
         }
 
-        public UInt256 RootHash => this.root.Hash;
-
-        public UInt256[] ToArray()
-        {
-            return Traverse(root).Select(_ => _.Hash).ToArray();
-        }
-
         /// <summary>
         /// when leaves = 3
         /// 3rd iteration:        x
@@ -50,17 +43,8 @@
             for (int i = 0; i < parents.Length; i++)
             {
                 var left = leaves[i * 2];
-
-                MerkleTreeNode right = null;
-                if (i * 2 + 1 < leaves.Length)
-                {
-                    right = leaves[i * 2 + 1];
-                }
-
+                var right = i * 2 + 1 < leaves.Length ? leaves[i * 2 + 1] : null;
                 parents[i] = new MerkleTreeNode(left, right);
-
-                if (right != null) right.Parent = parents[i];
-                left.Parent = parents[i];
             }
 
             return BuildTree(parents);
@@ -158,21 +142,6 @@
                     var leaf = new MerkleTreeNode(hashes.Dequeue());
                     return leaf;
                 }
-            }
-        }
-
-        // DFS traverse
-        private static IEnumerable<MerkleTreeNode> Traverse(MerkleTreeNode node)
-        {
-            if (node.Left == null)
-            {
-                // both child should appear null
-                yield return node;
-            }
-            else
-            {
-                yield return node.Left;
-                yield return node.Right;
             }
         }
     }

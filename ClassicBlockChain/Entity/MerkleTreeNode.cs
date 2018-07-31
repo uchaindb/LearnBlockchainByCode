@@ -10,7 +10,9 @@
         public MerkleTreeNode(MerkleTreeNode left, MerkleTreeNode right, MerkleTreeNode parent = null)
         {
             this.Left = left;
+            this.Left.Parent = this;
             this.Right = right;
+            if (this.Right != null) this.Right.Parent = this;
             this.Parent = parent;
             this.Hash = new Hash(new byte[][] { left.Hash, (right ?? left).Hash });
         }
@@ -24,7 +26,7 @@
         public MerkleTreeNode Left { get; }
         public MerkleTreeNode Right { get; }
 
-        public MerkleTreeNode Parent { get; internal set; }
+        public MerkleTreeNode Parent { get; private set; }
         public bool IsMarked { get; internal set; }
         public bool IsLeaf => this.Left == null && this.Right == null;
 
@@ -46,11 +48,6 @@
             if (Left != null)
                 result = Left.EnumerateDescendants().Concat(result);
             return result;
-        }
-
-        public MerkleTreeNode GetLeaf(int i)
-        {
-            return GetLeafs().Skip(i).FirstOrDefault();
         }
 
         public IEnumerable<MerkleTreeNode> GetLeafs()
