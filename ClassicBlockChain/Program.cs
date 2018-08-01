@@ -11,7 +11,7 @@ namespace UChainDB.Example.Chain
 {
     internal class Program
     {
-        private static IWallet me = new DeterministicWallet("Icer(Miner)");
+        private static List<IWallet> miners = new List<IWallet>();
         private static IWallet alice = new SimpleWallet("Alice");
         private static IWallet bob = new SimpleWallet("Bob");
 
@@ -29,11 +29,14 @@ namespace UChainDB.Example.Chain
             for (int i = 0; i < nodeNumber; i++)
             {
                 var (listener, clientFactory) = center.Produce();
-                var node = new Node(me, listener, clientFactory, center.NodeOptions);
+                var number = i ;
+                var miner = new DeterministicWallet($"{number}(Miner)");
+                miners.Add(miner);
+                var node = new Node(miner, listener, clientFactory, center.NodeOptions);
                 nodes.Add(node);
                 var engine = node.Engine;
-                ConsoleHelper.WriteLine($"Genesis Block: {BlockChain.GenesisBlock}", i + 1);
-                AssignEngineEvent(engine, i + 1);
+                ConsoleHelper.WriteLine($"[Node {number}]Genesis Block: {BlockChain.GenesisBlock}", number);
+                AssignEngineEvent(engine, number);
             }
 
             Console.ReadKey();
@@ -41,25 +44,25 @@ namespace UChainDB.Example.Chain
             for (int i = 0; i < nodeNumber; i++)
             {
                 var node = nodes[i];
-                var engine = node.Engine;
-                engine.Dispose();
+                node.Dispose();
             }
 
             Console.WriteLine($"Stopped, press any key to exit....");
             Console.ReadKey();
         }
 
-        private static void AssignEngineEvent(Engine engine, int number)
+        private static void AssignEngineEvent(Engine eng, int number)
         {
-            engine.OnNewBlockCreated += (object sender, BlockHead block) =>
+            eng.OnNewBlockCreated += (object sender, BlockHead block) =>
             {
-                var senderEngine = sender as Engine;
+                var engine = sender as Engine;
                 var height = engine.BlockChain.Height;
                 var tailBlock = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash);
                 ConsoleHelper.WriteLine($"New block created at height[{height:0000}]: {tailBlock}", number);
 
+                var me = miners[number];
                 // take action only on first node
-                if (number == 1)
+                if (number == 0)
                 {
                     if (height == 2)
                     {

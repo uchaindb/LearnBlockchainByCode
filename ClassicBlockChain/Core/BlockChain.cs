@@ -49,7 +49,7 @@ namespace UChainDB.Example.Chain.Core
             = new ConcurrentDictionary<(UInt256, int), byte>();
         public int Height => this.BlockHeadDictionary.Count;
         public BlockHead Tail { get; set; }
-        private ConcurrentQueue<Transaction> TxQueue { get; } = new ConcurrentQueue<Transaction>();
+        internal ConcurrentQueue<Transaction> TxQueue { get; } = new ConcurrentQueue<Transaction>();
 
         internal bool ContainTx(UInt256 txHash)
             => this.TxToBlockDictionary.ContainsKey(txHash);

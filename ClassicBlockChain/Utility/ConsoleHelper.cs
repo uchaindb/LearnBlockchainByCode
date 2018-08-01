@@ -4,7 +4,7 @@ namespace UChainDB.Example.Chain.Utility
 {
     public static class ConsoleHelper
     {
-        public static void WriteLine(string value, int number = 0)
+        public static void WriteLine(string value, int number = -1)
         {
             Write(value, number);
             Console.WriteLine();
@@ -24,9 +24,9 @@ namespace UChainDB.Example.Chain.Utility
             ConsoleColor.DarkCyan,
         };
 
-        public static void Write(string value, int number = 0)
+        public static void Write(string value, int number = -1)
         {
-            var color = colors[number % colors.Length];
+            var color = colors[number % colors.Length + 1];
             Write(value, color);
         }
 
