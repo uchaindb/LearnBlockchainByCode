@@ -18,6 +18,7 @@ namespace UChainDB.Example.Chain.Core
         private readonly Thread thWorker;
         private bool disposing = false;
         public event EventHandler<BlockHead> OnNewBlockCreated;
+        public event EventHandler<Transaction> OnNewTxCreated;
         private readonly IWallet MinerWallet;
         private readonly ISignAlgorithm signAlgo = new ECDsaSignAlgorithm();
 
@@ -32,6 +33,14 @@ namespace UChainDB.Example.Chain.Core
         public UInt256 AttachTx(Transaction tx)
         {
             this.BlockChain.AddTx(tx);
+            try
+            {
+                this.OnNewTxCreated?.Invoke(this, tx);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error when fire on new tx created event[{ex.Message}]");
+            }
             return tx.Hash;
         }
 
