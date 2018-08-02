@@ -10,6 +10,8 @@ namespace UChainDB.Example.Chain.Network
         bool IsConnected { get; }
 
         string State { get; }
+        string TargetAddress { get; }
+        string BaseAddress { get; }
 
         Task SendAsync(Command command, CancellationToken cancellationToken = default(CancellationToken));
 

@@ -39,10 +39,21 @@ namespace UChainDB.Example.Chain
             }
 
             Console.ReadKey();
+            Console.WriteLine($"===================================");
 
             for (int i = 0; i < nodeNumber; i++)
             {
                 var node = nodes[i];
+                var number = i;
+                ConsoleHelper.WriteLine($"[Node {number}]++++++++++++++++++++++++++++++++++++++++", number);
+                var blocks = node.Engine.BlockChain.GetBlockHeaders(BlockChain.GenesisBlockHead.Hash)
+                    .Select(_ => _.Hash.ToShort())
+                    .ToArray();
+                for (int j = 0; j < blocks.Length; j++)
+                {
+                    ConsoleHelper.WriteLine($"[{j + 2:0000}]: {blocks[j]}", number);
+                }
+
                 node.Dispose();
             }
 

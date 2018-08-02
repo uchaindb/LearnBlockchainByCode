@@ -7,12 +7,12 @@ namespace UChainDB.Example.Chain.Network.InMemory
     {
         public ActiveInMemoryClient(InMemoryClientServerCenter center, string address) : base(center)
         {
-            this.baseAddress = address;
+            this.BaseAddress = address;
         }
 
         public override async Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken))
         {
-            this.targetAddress = connectionString;
+            this.TargetAddress = connectionString;
             if (await this.center.ConnectAsync(connectionString, this))
             {
                 this.IsConnected = true;

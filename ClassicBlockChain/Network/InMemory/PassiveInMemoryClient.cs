@@ -6,13 +6,12 @@ namespace UChainDB.Example.Chain.Network.InMemory
 {
     public class PassiveInMemoryClient : InMemoryClientBase
     {
-        private readonly ActiveInMemoryClient client;
-
         public PassiveInMemoryClient(InMemoryClientServerCenter center, ActiveInMemoryClient client) : base(center)
         {
-            this.client = client;
-            this.baseAddress = client.targetAddress;
-            this.targetAddress = client.baseAddress;
+            this.opposite = client;
+            this.opposite.opposite = this;
+            this.BaseAddress = client.TargetAddress;
+            this.TargetAddress = client.BaseAddress;
         }
 
         public override Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken))

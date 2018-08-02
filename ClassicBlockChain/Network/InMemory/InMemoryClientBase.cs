@@ -9,11 +9,12 @@ namespace UChainDB.Example.Chain.Network.InMemory
     public abstract class InMemoryClientBase : IPeer
     {
         protected readonly InMemoryClientServerCenter center;
+        internal protected InMemoryClientBase opposite;
 
-        internal string targetAddress;
-        internal string baseAddress;
+        public string TargetAddress { get; protected set; }
+        public string BaseAddress { get; protected set; }
 
-        private Queue<Command> receivedData = new Queue<Command>();
+        protected Queue<Command> receivedData = new Queue<Command>();
 
         public InMemoryClientBase(InMemoryClientServerCenter center)
         {
@@ -48,11 +49,13 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         public virtual async Task SendAsync(Command command, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await this.center.SendAsync(this.targetAddress, command);
+            //await this.center.SendAsync(this.TargetAddress, command);
+            this.opposite.receivedData.Enqueue(command);
         }
 
         internal Task InternalSendAsync(Command command)
         {
+            //this.opposite.receivedData.Enqueue(command);
             this.receivedData.Enqueue(command);
             return Task.CompletedTask;
         }

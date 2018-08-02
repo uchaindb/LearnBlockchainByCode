@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UChainDB.Example.Chain.Core;
 using UChainDB.Example.Chain.Entity;
+using UChainDB.Example.Chain.Network.InMemory;
 using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network
@@ -30,7 +32,10 @@ namespace UChainDB.Example.Chain.Network
         {
             this.selfNode = node;
             this.magicNumber = magicNumber;
-            this.nodes = wellKnowns.Select(_ => new ConnectionNode(_)).ToList();
+            this.nodes = wellKnowns
+                .Where(_ => _ != listener.Address)
+                .Select(_ => new ConnectionNode(_))
+                .ToList();
             this.nodeId = nodeId;
             this.apiClientFactory = apiClientFactory;
             this.listener = listener;
@@ -41,6 +46,8 @@ namespace UChainDB.Example.Chain.Network
         {
             lock (this.nodes)
             {
+                var prev = this.nodes.FirstOrDefault(_ => _.ApiClient.TargetAddress == e.TargetAddress && _.ApiClient.BaseAddress == e.BaseAddress);
+                if (prev != null) this.nodes.Remove(prev);
                 this.nodes.Add(new ConnectionNode("TODO")
                 {
                     ApiClient = e,
@@ -52,7 +59,7 @@ namespace UChainDB.Example.Chain.Network
 
         public void Start()
         {
-            this.reconnectTimer = new Timer(async (_) => await this.ConnectAllAsync(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 20));
+            this.reconnectTimer = new Timer(async (_) => await this.ConnectAllAsync(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));
             this.thReceive = new Thread(Receive);
             this.thReceive.Start();
             this.isReceiving = true;
@@ -78,6 +85,8 @@ namespace UChainDB.Example.Chain.Network
                         command.OnReceived(this.selfNode, node);
                         if (!this.isReceiving) break;
                     }
+
+                    Thread.Sleep(500);
                 }
             }
             catch (Exception ex)
@@ -93,6 +102,7 @@ namespace UChainDB.Example.Chain.Network
             {
                 internalnodes = this.nodes
                     .Where(_ => _.Status == ConnectionStatus.Initial || _.Status == ConnectionStatus.Dead)
+                    .Where(_ => _.Address != "TODO")
                     .ToArray();
             }
             foreach (var node in internalnodes)
@@ -101,7 +111,7 @@ namespace UChainDB.Example.Chain.Network
             }
         }
 
-        public async void BroadcastAsync(Command command)
+        public async Task BroadcastAsync(Command command)
         {
             ConnectionNode[] internalnodes;
             lock (this.nodes)
@@ -149,6 +159,7 @@ namespace UChainDB.Example.Chain.Network
             try
             {
                 await client.ConnectAsync(node.Address);
+                node.ApiClient = client;
             }
             catch (ApiClientException)
             {
@@ -198,6 +209,7 @@ namespace UChainDB.Example.Chain.Network
         Dead,
     }
 
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
     public class ConnectionNode
     {
         public ConnectionNode(string address)
@@ -211,5 +223,8 @@ namespace UChainDB.Example.Chain.Network
         public IPeer ApiClient { get; set; }
         public BlockHead LatestBlock { get; set; }
         public ulong Height { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        protected virtual string DebuggerDisplay => $"{this.ApiClient?.BaseAddress} -> {this.ApiClient?.TargetAddress}";
     }
 }

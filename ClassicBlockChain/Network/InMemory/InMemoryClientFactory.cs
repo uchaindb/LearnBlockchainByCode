@@ -17,7 +17,7 @@
 
         public IPeer Produce()
         {
-            var client = new ActiveInMemoryClient(this.center, this.server.address);
+            var client = new ActiveInMemoryClient(this.center, this.server.Address);
             return client;
         }
     }

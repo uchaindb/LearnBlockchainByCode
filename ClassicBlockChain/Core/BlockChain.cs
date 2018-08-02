@@ -78,6 +78,7 @@ namespace UChainDB.Example.Chain.Core
         internal void AddSyncBlock(Block block)
         {
             this.BlockDictionary[block.Hash] = block;
+            this.InitBlocks(block.Head);
             this.TryMoveSyncTail(block.Head);
             this.InitBlocks(block.Head);
         }

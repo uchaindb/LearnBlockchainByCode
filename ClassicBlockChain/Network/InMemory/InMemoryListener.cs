@@ -6,19 +6,21 @@ namespace UChainDB.Example.Chain.Network.InMemory
     public class InMemoryListener : IListener
     {
         private readonly InMemoryClientServerCenter center;
-        internal readonly string address;
+
+        public string Address { get;}
 
         public event EventHandler<IPeer> OnPeerConnected;
 
         public InMemoryListener(InMemoryClientServerCenter center, string address)
         {
             this.center = center;
-            this.address = address;
+            this.Address = address;
         }
 
         internal Task<bool> ConnectAsync(ActiveInMemoryClient client)
         {
             var peer = new PassiveInMemoryClient(this.center, client );
+            this.center.AddPeer(peer);
             this.OnPeerConnected?.Invoke(this, peer);
             return Task.FromResult(true);
         }

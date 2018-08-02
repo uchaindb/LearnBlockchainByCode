@@ -22,7 +22,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         internal void AddPeer(InMemoryClientBase client)
         {
-            var key = client.targetAddress;
+            var key = client.TargetAddress;
             if (this.dicPeers.ContainsKey(key))
             {
                 this.dicPeers[key].Add(client);
@@ -35,7 +35,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         internal void RemovePeer(InMemoryClientBase client)
         {
-            var key = client.targetAddress;
+            var key = client.TargetAddress;
             if (this.dicPeers.ContainsKey(key))
             {
                 this.dicPeers[key].Remove(client);
@@ -75,17 +75,18 @@ namespace UChainDB.Example.Chain.Network.InMemory
             return (server, clientFactory);
         }
 
-        internal async Task SendAsync(string targetAddress, Command command)
-        {
-            if (this.dicPeers.TryGetValue(targetAddress, out var clients))
-            {
-                foreach (var client in clients)
-                {
-                    await client.InternalSendAsync(command);
-                }
-            }
-            //return Task.FromResult(this.dicServers[baseAddress].Execute(buffer));
-        }
+        //internal async Task SendAsync(string targetAddress, Command command)
+        //{
+        //    if (this.dicPeers.TryGetValue(targetAddress, out var clients))
+        //    {
+        //        var cc = clients.ToArray();
+        //        foreach (var client in cc)
+        //        {
+        //            await client.InternalSendAsync(command);
+        //        }
+        //    }
+        //    //return Task.FromResult(this.dicServers[baseAddress].Execute(buffer));
+        //}
 
         internal async Task<bool> ConnectAsync(string baseAddress, ActiveInMemoryClient client)
         {
