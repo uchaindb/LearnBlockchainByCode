@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using UChainDB.Example.Chain.Entity;
 using UChainDB.Example.Chain.Network;
+using UChainDB.Example.Chain.Network.RpcCommands;
 using UChainDB.Example.Chain.Utility;
 using UChainDB.Example.Chain.Wallet;
 
@@ -40,12 +41,13 @@ namespace UChainDB.Example.Chain.Core
 
         private void Engine_OnNewTxCreated(object sender, Transaction e)
         {
-            this.pool.BroadcastAsync(null);
+            this.pool.BroadcastAsync(new TransactionCommnad { Transaction = e });
         }
 
         private void Engine_OnNewBlockCreated(object sender, BlockHead e)
         {
-            this.pool.BroadcastAsync(null);
+            var blk = this.Engine.BlockChain.GetBlock(e.Hash);
+            this.pool.BroadcastAsync(new BlockCommnad { Block = blk });
         }
 
         public void Dispose()

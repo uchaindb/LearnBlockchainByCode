@@ -156,6 +156,28 @@ namespace UChainDB.Example.Chain.Core
             return this.BlockDictionary[hash];
         }
 
+        internal IEnumerable<Block> GetBlocks(UInt256 startingHash)
+        {
+            return this.GetBlockHeaders(startingHash)
+                .Select(_ => this.GetBlock(_.Hash));
+        }
+
+        internal IEnumerable<BlockHead> GetBlockHeaders(UInt256 startingHash)
+        {
+            return this.ReverseIterateBlockHeaders(startingHash, this.Tail.Hash)
+                .Reverse();
+        }
+
+        internal IEnumerable<BlockHead> ReverseIterateBlockHeaders(UInt256 from, UInt256 to)
+        {
+            var cursor = this.BlockHeadDictionary[to];
+            while (cursor.Hash != from)
+            {
+                yield return cursor;
+                cursor = this.BlockHeadDictionary[cursor.PreviousBlockHash];
+            }
+        }
+
         private void MaintainBlockChain(BlockHead newTail)
         {
             var prevTail = this.Tail;

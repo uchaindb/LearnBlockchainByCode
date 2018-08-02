@@ -48,16 +48,6 @@ namespace UChainDB.Example.Chain.Network
             }
         }
 
-        internal enum ConnectionStatus
-        {
-            Initial,
-            Self,
-            DifferentNetwork,
-            Connected,
-            Disconnected,
-            Dead,
-        }
-
         public int ConnectionNumber { get; set; }
 
         public void Start()
@@ -83,9 +73,9 @@ namespace UChainDB.Example.Chain.Network
                     foreach (var node in internalnodes)
                     {
                         if (node.ApiClient == null) continue;
-                        var result = node.ApiClient.ReceiveAsync().Result;
-                        if (result == null) continue;
-                        ProcessCommand(node, result);
+                        var command = node.ApiClient.ReceiveAsync().Result;
+                        if (command == null) continue;
+                        command.OnReceived(this.selfNode, node);
                         if (!this.isReceiving) break;
                     }
                 }
@@ -93,21 +83,6 @@ namespace UChainDB.Example.Chain.Network
             catch (Exception ex)
             {
                 Console.WriteLine($"unexpected exception in receive: {ex}");
-            }
-        }
-
-        private void ProcessCommand(ConnectionNode node, Command command)
-        {
-            switch (command.CommandType)
-            {
-                case Commands.Version:
-                    node.Status = ConnectionStatus.Connected;
-                    break;
-                case Commands.VersionAcknowledge:
-                    node.Status = ConnectionStatus.Connected;
-                    break;
-                default:
-                    break;
             }
         }
 
@@ -287,19 +262,30 @@ namespace UChainDB.Example.Chain.Network
         //    }
         //}
 
-        internal class ConnectionNode
-        {
-            public ConnectionNode(string address)
-            {
-                this.Address = address;
-            }
+    }
 
-            public string Address { get; set; }
-            public ConnectionStatus Status { get; set; } = ConnectionStatus.Initial;
-            public Guid NodeId { get; set; } = Guid.Empty;
-            public IPeer ApiClient { get; set; }
-            public BlockHead LatestBlock { get; set; }
-            public ulong Height { get; set; }
+    public enum ConnectionStatus
+    {
+        Initial,
+        Self,
+        DifferentNetwork,
+        Connected,
+        Disconnected,
+        Dead,
+    }
+
+    public class ConnectionNode
+    {
+        public ConnectionNode(string address)
+        {
+            this.Address = address;
         }
+
+        public string Address { get; set; }
+        public ConnectionStatus Status { get; set; } = ConnectionStatus.Initial;
+        public Guid NodeId { get; set; } = Guid.Empty;
+        public IPeer ApiClient { get; set; }
+        public BlockHead LatestBlock { get; set; }
+        public ulong Height { get; set; }
     }
 }
