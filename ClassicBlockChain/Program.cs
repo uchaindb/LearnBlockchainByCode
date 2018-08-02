@@ -29,14 +29,13 @@ namespace UChainDB.Example.Chain
             for (int i = 0; i < nodeNumber; i++)
             {
                 var (listener, clientFactory) = center.Produce();
-                var number = i ;
+                var number = i;
                 var miner = new DeterministicWallet($"{number}(Miner)");
                 miners.Add(miner);
                 var node = new Node(miner, listener, clientFactory, center.NodeOptions);
                 nodes.Add(node);
-                var engine = node.Engine;
                 ConsoleHelper.WriteLine($"[Node {number}]Genesis Block: {BlockChain.GenesisBlock}", number);
-                AssignEngineEvent(engine, number);
+                AssignEvent(node, number);
             }
 
             Console.ReadKey();
@@ -51,9 +50,9 @@ namespace UChainDB.Example.Chain
             Console.ReadKey();
         }
 
-        private static void AssignEngineEvent(Engine eng, int number)
+        private static void AssignEvent(Node node, int number)
         {
-            eng.OnNewBlockCreated += (object sender, BlockHead block) =>
+            node.Engine.OnNewBlockCreated += (object sender, BlockHead block) =>
             {
                 var engine = sender as Engine;
                 var height = engine.BlockChain.Height;
@@ -89,6 +88,11 @@ namespace UChainDB.Example.Chain
                         me.SendMoney(engine, h2utxo.Tx, h2utxo.Index, bob, 50);
                     }
                 }
+            };
+
+            node.pool.OnCommandReceived += (object sender, Network.RpcCommands.Command e) =>
+            {
+                ConsoleHelper.WriteLine($"Command[{e.CommandType}] received", number);
             };
         }
     }

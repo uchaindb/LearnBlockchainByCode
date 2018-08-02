@@ -71,7 +71,25 @@ namespace UChainDB.Example.Chain.Core
 
             this.BlockDictionary[block.Hash] = block;
             this.InitBlocks(blockhead);
+            this.MaintainBlockChain(blockhead);
             return blockhead;
+        }
+
+        internal void AddSyncBlock(Block block)
+        {
+            this.BlockDictionary[block.Hash] = block;
+            this.TryMoveSyncTail(block.Head);
+            this.InitBlocks(block.Head);
+        }
+
+        private void TryMoveSyncTail(BlockHead newTail)
+        {
+            var cnow = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, this.Tail.Hash).Count();
+            var cnew = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, newTail.Hash).Count();
+            if (cnew > cnow)
+            {
+                MaintainBlockChain(newTail);
+            }
         }
 
         private (bool ret, string error) CheckQueueOfTx(Transaction tx)
@@ -106,8 +124,6 @@ namespace UChainDB.Example.Chain.Core
             {
                 this.BlockHeadDictionary[block.Hash] = block;
             }
-
-            this.MaintainBlockChain(blocks.Last());
         }
 
         private static BlockHead FindValidBlock(BlockHead originBlock, int difficulty)
@@ -210,5 +226,23 @@ namespace UChainDB.Example.Chain.Core
                 cursor = this.BlockHeadDictionary[cursor.PreviousBlockHash];
             }
         }
+
+        // ref https://en.bitcoin.it/wiki/Protocol_documentation#getblocks
+        private static long[] GetBlockLocatorHashes(long height)
+        {
+            var indexes = new List<long>();
+            var step = 1;
+            var i = height;
+            do
+            {
+                if (indexes.Count >= 10) step *= 2;
+                indexes.Add(i);
+                i -= step;
+            } while (i > 0);
+
+            indexes.Add(0);
+            return indexes.ToArray();
+        }
+
     }
 }

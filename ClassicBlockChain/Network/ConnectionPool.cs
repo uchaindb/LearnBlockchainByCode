@@ -20,11 +20,11 @@ namespace UChainDB.Example.Chain.Network
         private Node selfNode;
         private IApiClientFactory apiClientFactory;
         private readonly IListener listener;
-        private Timer syncTimer;
         private Timer reconnectTimer;
         private bool isSyncing = false;
         private bool isReceiving = false;
         private Thread thReceive;
+        public event EventHandler<Command> OnCommandReceived;
 
         public ConnectionPool(Node node, int magicNumber, string[] wellKnowns, Guid nodeId, IApiClientFactory apiClientFactory, IListener listener)
         {
@@ -53,7 +53,6 @@ namespace UChainDB.Example.Chain.Network
         public void Start()
         {
             this.reconnectTimer = new Timer(async (_) => await this.ConnectAllAsync(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 20));
-            //this.syncTimer = new Timer(async (_) => await this.SyncAsync(), null, new TimeSpan(0, 0, 2), new TimeSpan(0, 0, 2));
             this.thReceive = new Thread(Receive);
             this.thReceive.Start();
             this.isReceiving = true;
@@ -75,6 +74,7 @@ namespace UChainDB.Example.Chain.Network
                         if (node.ApiClient == null) continue;
                         var command = node.ApiClient.ReceiveAsync().Result;
                         if (command == null) continue;
+                        OnCommandReceived?.Invoke(this, command);
                         command.OnReceived(this.selfNode, node);
                         if (!this.isReceiving) break;
                     }
@@ -119,7 +119,6 @@ namespace UChainDB.Example.Chain.Network
         public async void Dispose()
         {
             this.isReceiving = false;
-            this.syncTimer?.Dispose();
             this.reconnectTimer?.Dispose();
             ConnectionNode[] internalnodes;
             lock (this.nodes)
@@ -187,81 +186,6 @@ namespace UChainDB.Example.Chain.Network
                 }
             }
         }
-
-        private async Task SyncAsync()
-        {
-            if (this.isSyncing) return;
-            this.isSyncing = true;
-            try
-            {
-                foreach (var node in this.nodes.Where(_ => _.Status == ConnectionStatus.Connected))
-                {
-                    try
-                    {
-                        //await this.SyncBlockAsync(node);
-                    }
-                    catch (ApiClientException acex)
-                    {
-                        if (acex.InnerException is SocketException se && (se.SocketErrorCode == SocketError.ConnectionAborted || se.SocketErrorCode == SocketError.ConnectionReset))
-                        {
-                            // reconnect
-                            await this.TryConnectAsync(node);
-                            //this.log.LogWarning($"reconnecting [{node.Address}] due to connection aborted or reset.", se);
-                        }
-                        else if (!node.ApiClient.IsConnected)
-                        {
-                            // reconnect
-                            await this.TryConnectAsync(node);
-                            //this.log.LogWarning($"reconnecting [{node.Address}] due to abnormal state[{node.ApiClient.State}]", acex);
-                        }
-                        else
-                        {
-                            //this.log.LogError($"Sync error", acex);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                //this.log.LogError($"General sync error: " + ex.Message, ex);
-            }
-            finally
-            {
-                this.isSyncing = false;
-            }
-        }
-
-        //private async Task SyncBlockAsync(ConnectionNode node)
-        //{
-        //    var response = (await node.ApiClient.RequestAsync<StatusRpcResponse>(new JsonRpcRequest { Method = Commands.Status }));
-        //    if (response == null)
-        //    {
-        //        this.log.LogDebug($"didn't receive right response from [{node.Address}] for status command, skipped");
-        //        return;
-        //    }
-
-        //    var statusRet = response.Result;
-        //    var curHeight = this.selfNode.Engine.BlockChain.Height;
-        //    node.Height = statusRet.Height;
-        //    node.LatestBlock = statusRet.Tail;
-
-        //    while (curHeight < node.Height)
-        //    {
-        //        var locators = this.selfNode.Engine.BlockChain.GetBlockLocatorHashes()
-        //            .Select(_ => _.ToBase58())
-        //            .ToArray();
-        //        var result = (await node.ApiClient.RequestAsync<BlocksRpcResponse>(new JsonRpcRequest
-        //        {
-        //            Method = Commands.Blocks,
-        //            Parameters = new BlocksRpcRequest { BlockLocatorHashes = locators }
-        //        })).Result;
-
-        //        this.selfNode.Engine.PrepareTrieNodes(result.TableTrieNodes, result.CellTrieNodes);
-        //        this.selfNode.Engine.AppendBlocks(result.Blocks);
-        //        curHeight = this.selfNode.Engine.BlockChain.Height;
-        //    }
-        //}
-
     }
 
     public enum ConnectionStatus
