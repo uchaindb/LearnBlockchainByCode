@@ -17,6 +17,7 @@ namespace UChainDB.Example.Chain
 
         private static Utxo h2utxo;
         private static Transaction h3tx;
+        private static bool bobVerified = false;
         private static List<Node> nodes = new List<Node>();
         private static InMemoryClientServerCenter center = new InMemoryClientServerCenter();
         private static int nodeNumber = 2;
@@ -80,23 +81,36 @@ namespace UChainDB.Example.Chain
                         var utxo = utxos.First();
                         h2utxo = utxo;
                         me.SendMoney(engine, utxo.Tx, utxo.Index, alice, 30, 1);
+                        return;
                     }
-                    else if (height == 3)
+
+                    if (h3tx == null)
                     {
                         var utxos = alice.GetUtxos(engine);
-                        var utxo = utxos.First();
-                        alice.SyncBlockHead(engine);
-                        var verify = alice.VerifyTx(engine, utxo.Tx);
-                        ConsoleHelper.WriteLine($"verify [{utxo.Tx.Hash.ToShort()}]: {verify}", number);
-                        h3tx = alice.SendMoney(engine, utxo.Tx, utxo.Index, bob, 20);
+                        var utxo = utxos.FirstOrDefault();
+
+                        if (utxo != null)
+                        {
+                            alice.SyncBlockHead(engine);
+                            var verify = alice.VerifyTx(engine, utxo.Tx);
+                            ConsoleHelper.WriteLine($"verify [{utxo.Tx.Hash.ToShort()}]: {verify}", number);
+                            h3tx = alice.SendMoney(engine, utxo.Tx, utxo.Index, bob, 20);
+                        }
+
+                        return;
                     }
-                    else if (height == 4)
+
+                    if (!bobVerified)
                     {
                         bob.SyncBlockHead(engine);
                         var verify = bob.VerifyTx(engine, h3tx);
                         ConsoleHelper.WriteLine($"verify [{h3tx.Hash.ToShort()}]: {verify}", number);
-                        // try to use used transaction which cannot pass validation and ignored
-                        me.SendMoney(engine, h2utxo.Tx, h2utxo.Index, bob, 50);
+                        bobVerified = verify;
+                        if (bobVerified)
+                        {
+                            // try to use used transaction which cannot pass validation and ignored
+                            me.SendMoney(engine, h2utxo.Tx, h2utxo.Index, bob, 50);
+                        }
                     }
                 }
             };

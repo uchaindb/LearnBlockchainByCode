@@ -4,10 +4,15 @@ namespace UChainDB.Example.Chain.Utility
 {
     public static class ConsoleHelper
     {
+        private static object lockObject = new object();
+
         public static void WriteLine(string value, int number = -1)
         {
-            Write(value, number);
-            Console.WriteLine();
+            lock (lockObject)
+            {
+                Write(value, number);
+                Console.WriteLine();
+            }
         }
 
         static ConsoleColor[] colors = new[] {
@@ -26,22 +31,31 @@ namespace UChainDB.Example.Chain.Utility
 
         public static void Write(string value, int number = -1)
         {
-            var color = colors[number % colors.Length + 1];
-            Write(value, color);
+            lock (lockObject)
+            {
+                var color = colors[number % colors.Length + 1];
+                Write(value, color);
+            }
         }
 
         public static void WriteLine(string value, ConsoleColor color, ConsoleColor backgroundColor = ConsoleColor.Black)
         {
-            Write(value, color, backgroundColor);
-            Console.WriteLine();
+            lock (lockObject)
+            {
+                Write(value, color, backgroundColor);
+                Console.WriteLine();
+            }
         }
 
         public static void Write(string value, ConsoleColor color, ConsoleColor backgroundColor = ConsoleColor.Black)
         {
-            Console.ForegroundColor = color;
-            Console.BackgroundColor = backgroundColor;
-            Console.Write(value);
-            Console.ResetColor();
+            lock (lockObject)
+            {
+                Console.ForegroundColor = color;
+                Console.BackgroundColor = backgroundColor;
+                Console.Write(value);
+                Console.ResetColor();
+            }
         }
     }
 }

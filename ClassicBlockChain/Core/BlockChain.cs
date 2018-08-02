@@ -24,7 +24,7 @@ namespace UChainDB.Example.Chain.Core
             };
         }
 
-        private const byte Difficulty = 2;
+        private const byte Difficulty = 5;
         private const byte BlockChainVersion = 1;
 
         public static readonly BlockHead GenesisBlockHead;
@@ -134,7 +134,8 @@ namespace UChainDB.Example.Chain.Core
             while (true)
             {
                 block.Nonce++;
-                if (((byte[])block.Hash).Take(difficulty).All(_ => _ == 0))
+                //if (((byte[])block.Hash).Take(difficulty).All(_ => _ == 0))
+                if ((BitConverter.ToString((byte[])block.Hash).Replace("-", "")).Take(difficulty).All(_ => _ == '0'))
                 {
                     return block;
                 }
