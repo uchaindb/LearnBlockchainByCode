@@ -51,7 +51,7 @@ namespace DebugConsole
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<ChatHub>("/chatHub");
+                routes.MapHub<ControlHub>("/hub");
             });
 
             app.UseMvc(routes =>

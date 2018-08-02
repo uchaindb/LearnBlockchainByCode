@@ -14,4 +14,8 @@
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ClassicBlockChain\ClassicBlockChain.csproj" />
+  </ItemGroup>
+
 </Project>

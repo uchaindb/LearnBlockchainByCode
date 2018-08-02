@@ -169,7 +169,7 @@ namespace UChainDB.Example.Chain.Core
             return this.BlockDictionary[txRef.head.Hash]?.Txs[txRef.index];
         }
 
-        internal Block GetBlock(UInt256 hash)
+        public Block GetBlock(UInt256 hash)
         {
             return this.BlockDictionary[hash];
         }
@@ -180,7 +180,7 @@ namespace UChainDB.Example.Chain.Core
                 .Select(_ => this.GetBlock(_.Hash));
         }
 
-        internal IEnumerable<BlockHead> GetBlockHeaders(UInt256 startingHash)
+        public IEnumerable<BlockHead> GetBlockHeaders(UInt256 startingHash)
         {
             return this.ReverseIterateBlockHeaders(startingHash, this.Tail.Hash)
                 .Reverse();

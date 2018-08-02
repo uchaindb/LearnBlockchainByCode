@@ -1,6 +1,6 @@
 ﻿$(document).ready(() => {
     const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/chatHub")
+        .withUrl("/hub")
         .build();
 
     connection.on("ReceiveMessage", (user, message) => {
@@ -20,33 +20,49 @@
         event.preventDefault();
     });
 
-    var v = {
-        author: "hh",
-        status: [
-            {
-                name: "1",
-                blocks: [
-                    {
-                        height: 2,
-                        hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
-                    },]
-            },
-            {
-                name: "2",
-                blocks: [
-                    {
-                        height: 2,
-                        hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
-                    },
-                    {
-                        height: 3,
-                        hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
-                    },
-                ]
-            },
-        ]
-    };
-    var html =$.templates("#statusTemplate").render(v);
-    $(html).appendTo("#template-container");
+    $('#start').click((event) => {
+        connection.invoke("Start").catch(err => console.error(err.toString()));
+        event.preventDefault();
+    });
+
+    $('#stop').click((event) => {
+        connection.invoke("Stop").catch(err => console.error(err.toString()));
+        event.preventDefault();
+    });
+
+    connection.on("Update", (data) => {
+        var html = $.templates("#statusTemplate").render(data);
+        $(html).appendTo("#template-container");
+        console.log("received", data);
+    });
+
+    //var v = {
+    //    author: "hh",
+    //    status: [
+    //        {
+    //            name: "1",
+    //            blocks: [
+    //                {
+    //                    height: 2,
+    //                    hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
+    //                },]
+    //        },
+    //        {
+    //            name: "2",
+    //            blocks: [
+    //                {
+    //                    height: 2,
+    //                    hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
+    //                },
+    //                {
+    //                    height: 3,
+    //                    hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
+    //                },
+    //            ]
+    //        },
+    //    ]
+    //};
+    //var html =$.templates("#statusTemplate").render(v);
+    //$(html).appendTo("#template-container");
 });
 

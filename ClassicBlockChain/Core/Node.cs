@@ -17,7 +17,7 @@ namespace UChainDB.Example.Chain.Core
         private readonly NodeOptions options;
         private readonly IApiClientFactory apiClientFactory;
         public Guid NodeId { get; set; } = Guid.NewGuid();
-        internal ConnectionPool pool;
+        public ConnectionPool pool;
         public int NetworkId { get; }
 
         public Node(IWallet miner, IListener apiServer, IApiClientFactory apiClientFactory, NodeOptions options = null)
