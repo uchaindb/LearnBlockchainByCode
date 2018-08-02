@@ -17,7 +17,7 @@
     </environment>
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    @*<nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -36,19 +36,18 @@
                 </ul>
             </div>
         </div>
-    </nav>
+    </nav>*@
 
-    <partial name="_CookieConsentPartial" />
+        @RenderBody()
 
-    <div class="container body-content">
+    @*<div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
             <p>&copy; 2018 - DebugConsole</p>
         </footer>
-    </div>
+    </div>*@
 
-    <script src="~/lib/signalr/signalr.js"></script>
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
@@ -70,6 +69,9 @@
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
+    <script src="~/lib/signalr/signalr.js"></script>
+    @*<script src="~/lib/jquery-template/jquery.tmpl.js"></script>*@
+    <script src="~/lib/jsrender/jsrender.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

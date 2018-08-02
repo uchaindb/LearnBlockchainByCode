@@ -3,11 +3,117 @@
 }
 
 <div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">Status</div>
+        <div class="panel-body">
+            <button class="btn btn-primary" id="start"><span class="glyphicon glyphicon-play"></span> Start</button>
+            <button class="btn btn-primary" id="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+
+        </div>
+        <div class="panel-body">
+            <div class="row" id="template-container">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="statusTemplate">
+    {^{for status}}
+    <div class="col-sm-6">
+        <div class="panel panel-success">
+            <div class="panel-heading">{^{>name}}</div>
+            <div class="panel-body">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Status</div>
+                    <ul class="list-group">
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                        <li class="list-group-item">dhh</li>
+                    </ul>
+                </div>
+            </div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Height</th>
+                        <th>Hash</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @*{%tmpl(blocks) "#blockTemplate"%}*@
+                    {^{for blocks}}
+                    <tr>
+                        <td>{^{>height}}</td>
+                        <td>{^{>hash}}</td>
+                    </tr>
+                    {{/for}}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {{/for}}
+</script>
+@*
+<script id="blockTemplate" type="text/x-jquery-tmpl">
+    <tr>
+        <td>${height}</td>
+        <td>${hash}</td>
+    </tr>
+</script>
+
+<script type="text/html" id="statusTemplate">
+    <div class="col-sm-6">
+        <div class="panel panel-success">
+            <div class="panel-heading">${name}</div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Height</th>
+                        <th>Hash</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%tmpl(blocks) "#blockTemplate"%}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</script>
+
+{{each $value.blocks}}
+<tr>
+    <td>${$value.height}</td>
+    <td>${$value.hash}</td>
+</tr>
+{{/each}}*@
+<div class="container">
+    <div class="row">&nbsp;</div>
+</div>
+<div class="container">
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-6">&nbsp;</div>
         <div class="col-6">
-            User..........<input type="text" id="userInput" />
+            User.........<input type="text" id="userInput" />
             <br />
             Message...<input type="text" id="messageInput" />
             <input type="button" id="sendButton" value="Send Message" />
