@@ -97,6 +97,13 @@ namespace UChainDB.Example.Chain.Core
                 Head = blockHead,
                 Txs = allTxs,
             });
+            if (block == null)
+            {
+                foreach (var tx in finalTxs)
+                {
+                    this.BlockChain.AddTx(tx);
+                }
+            }
             return block;
         }
 

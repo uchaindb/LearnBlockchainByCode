@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using UChainDB.Example.Chain.Core;
@@ -97,15 +98,23 @@ namespace UChainDB.Example.Chain.Wallet
 
         public bool VerifyTx(Engine engine, Transaction tx)
         {
-            var (hs, flags, txnum, block) = engine.GetMerkleBlock(tx.Hash);
+            try
+            {
+                var (hs, flags, txnum, block) = engine.GetMerkleBlock(tx.Hash);
 
-            var merkleRoot = MerkleTree.GetPartialTreeRootHash(txnum, hs, flags);
+                var merkleRoot = MerkleTree.GetPartialTreeRootHash(txnum, hs, flags);
 
-            // response block not exist in local blockchain
-            if (!this.blockHeads.ContainsKey(block.Hash)) return false;
+                // response block not exist in local blockchain
+                if (!this.blockHeads.ContainsKey(block.Hash)) return false;
 
-            var localBlock = this.blockHeads[block.Hash];
-            return merkleRoot == localBlock.MerkleRoot;
+                var localBlock = this.blockHeads[block.Hash];
+                return merkleRoot == localBlock.MerkleRoot;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"verify failed: {ex}");
+                return false;
+            }
         }
 
         protected virtual void AfterKeyPairGenerated()

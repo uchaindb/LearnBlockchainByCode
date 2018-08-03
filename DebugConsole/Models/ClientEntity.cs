@@ -6,6 +6,7 @@ namespace DebugConsole.Models
     public class ClientEntity
     {
         public List<NodeEntity> Nodes { get; set; } = new List<NodeEntity>();
+        public bool IsRunning { get; set; }
     }
 
     public class BlockEntity
@@ -37,13 +38,14 @@ namespace DebugConsole.Models
         }
     }
 
-    public class CommandReceivedStatusEntity : StatusEntity
+    public class CommandReceivedStatusEntity : PlainStatusEntity
     {
         public override StatusType Type => StatusType.CommandReceived;
 
         public string Command { get; }
 
-        public CommandReceivedStatusEntity(string command)
+        public CommandReceivedStatusEntity(string command, string text = null)
+            : base(text)
         {
             Command = command;
         }

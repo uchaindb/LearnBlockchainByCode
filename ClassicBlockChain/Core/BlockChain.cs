@@ -48,7 +48,7 @@ namespace UChainDB.Example.Chain.Core
             = new ConcurrentDictionary<UInt256, (BlockHead, int)>();
         internal ConcurrentDictionary<(UInt256, int), byte> UsedTxDictionary { get; }
             = new ConcurrentDictionary<(UInt256, int), byte>();
-        public int Height => this.BlockHeadDictionary.Count;
+        public int Height => this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, this.Tail.Hash).Count();
         public BlockHead Tail { get; set; }
         internal ConcurrentQueue<Transaction> TxQueue { get; } = new ConcurrentQueue<Transaction>();
 

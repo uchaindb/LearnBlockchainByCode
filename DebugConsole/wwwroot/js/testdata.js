@@ -1,5 +1,6 @@
 ﻿var testdata =
     {
+        isRunning: false,
         "nodes": [
             {
                 "name": "3",
