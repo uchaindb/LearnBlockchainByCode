@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UChainDB.BingChain.Contracts.Json;
+using UChainDB.Example.Chain.Entity;
 
 namespace DebugConsole
 {
@@ -30,7 +32,13 @@ namespace DebugConsole
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            services.AddSignalR();
+            services.AddSignalR().AddJsonProtocol(_ =>
+            {
+                _.PayloadSerializerSettings.Converters.Add(new ByteArrayConverter<PublicKeyDef>());
+                _.PayloadSerializerSettings.Converters.Add(new ByteArrayConverter<SignatureDef>());
+                _.PayloadSerializerSettings.Converters.Add(new UInt256Converter());
+                _.PayloadSerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            });
             services.AddSingleton<ControlService>();
         }
 

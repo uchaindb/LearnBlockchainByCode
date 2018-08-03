@@ -174,7 +174,7 @@ namespace UChainDB.Example.Chain.Core
             return this.BlockDictionary[hash];
         }
 
-        internal IEnumerable<Block> GetBlocks(UInt256 startingHash)
+        public IEnumerable<Block> GetBlocks(UInt256 startingHash)
         {
             return this.GetBlockHeaders(startingHash)
                 .Select(_ => this.GetBlock(_.Hash));

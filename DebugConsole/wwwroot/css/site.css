@@ -53,3 +53,7 @@ ul.list-group {
         display: inline-block;
         max-width: 100%;
     }
+
+.status-item blockquote {
+    font-size: inherit;
+}

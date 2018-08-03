@@ -11,31 +11,51 @@
             </div>
             <div class="panel-body">
                 <div class="row">
-                    <div v-for="status in statuses" class="col-sm-6">
+                    <div v-for="node in nodes" class="col-sm-6">
                         <div class="panel panel-success">
-                            <div class="panel-heading">{{status.name}}</div>
+                            <div class="panel-heading">{{node.name}}</div>
                             <div class="panel-body">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">Status</div>
                                     <ul class="list-group">
-                                        <li v-for="line in status.status" class="list-group-item">{{line}}</li>
+                                        <li v-for="status in node.status" class="list-group-item status-item">
+                                            <div v-if="status.type == 0">
+                                                <span class="label label-info">Output</span>
+                                                {{status.text}}
+                                            </div>
+                                            <div v-if="status.type == 1">
+                                                <span class="label label-info">Command</span>
+                                                <span class="label label-primary">{{status.command}}</span> received
+                                            </div>
+                                            <div v-if="status.type == 2">
+                                                <span class="label label-info">Block</span>
+                                                {{status.text}}
+                                                <blockquote>
+                                                    <block v-bind:block="status.block"></block>
+                                                </blockquote>
+                                            </div>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
-                            <table class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Height</th>
-                                        <th>Hash</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="block in status.blocks">
-                                        <td>{{block.height}}</td>
-                                        <td class="text-truncate"><span v-bind:title="block.hash">{{block.hash}}</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="panel-group" v-bind:id="'#accordion' + node.name" role="tablist" aria-multiselectable="true">
+                                <div v-for="block in node.blocks" class="panel panel-default">
+                                    <div class="panel-heading" role="tab">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" role="button" data-toggle="collapse" v-bind:data-parent="'#accordion' + node.name"
+                                               v-bind:href="'#' + node.name + '-' + block.height">
+                                                {{block.height}} - {{block.block.hash | short}}
+                                                <span class="label label-info">{{block.block.txs.length}}</span>
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div v-bind:id="node.name + '-' + block.height" class="panel-collapse collapse" role="tabpanel">
+                                        <div class="panel-body">
+                                            <block v-bind:block="block.block"></block>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -43,30 +63,31 @@
         </div>
     </div>
 </div>
-
-<div class="container">
-    <div class="row">&nbsp;</div>
-</div>
-<div class="container">
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-6">&nbsp;</div>
-        <div class="col-6">
-            User.........<input type="text" id="userInput" />
-            <br />
-            Message...<input type="text" id="messageInput" />
-            <input type="button" id="sendButton" value="Send Message" />
-        </div>
+<script type="text/x-template" id="block-template">
+    <div>
+        <span class="glyphicon glyphicon-lock">{{block.hash | short}}</span>
+        <span class="glyphicon glyphicon-edit">{{block.head.nonce}}</span>
+        <span class="glyphicon glyphicon-map-marker">{{block.head.merkleRoot | short}}</span>
+        <ul>
+            <li v-for="tx in block.txs">
+                <span class="glyphicon glyphicon-transfer">{{tx.hash | short}}</span>
+                <span v-if="tx.inputTxs && tx.inputTxs.length > 0">
+                <span v-for="tx in tx.inputTxs">
+                    <span class="label label-danger">
+                        {{tx.prevTxHash | short}}[{{tx.prevTxIndex}}]: {{tx.signature | short}}
+                    </span>
+                </span>
+                </span>
+                <span v-else>
+                    <kbd>CoinBase</kbd>
+                </span>
+                <span class="glyphicon glyphicon-arrow-right"></span>
+                <span v-for="output in tx.outputs">
+                    <span class="label label-success">
+                        {{output.value}}: {{output.publicKey | short}}
+                    </span>
+                </span>
+            </li>
+        </ul>
     </div>
-    <div class="row">
-        <div class="col-12">
-            <hr />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-6">&nbsp;</div>
-        <div class="col-6">
-            <ul id="messagesList"></ul>
-        </div>
-    </div>
-</div>
+</script>

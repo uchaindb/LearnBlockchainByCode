@@ -106,7 +106,9 @@ namespace UChainDB.Example.Chain.Core
             if (this.BlockChain.ContainUsedTxs(tx.InputTxs)) return false;
             foreach (var intx in tx.InputTxs)
             {
-                var output = this.BlockChain.GetTx(intx.PrevTxHash).Outputs[intx.PrevTxIndex];
+                var prevTx = this.BlockChain.GetTx(intx.PrevTxHash);
+                if (prevTx == null) return false;
+                var output = prevTx.Outputs[intx.PrevTxIndex];
                 var verifyTx = new Transaction
                 {
                     Version = tx.Version,

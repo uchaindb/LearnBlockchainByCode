@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using DebugConsole.Models;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,18 +51,17 @@ namespace DebugConsole
         {
             this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));
             this.clientData = new ClientEntity();
-            this.StatusHelper = new StatusHelper(clientData);
 
             for (int i = 0; i < nodeNumber; i++)
             {
-                this.clientData.Statuses.Add(new StatusEntity());
-                var (listener, clientFactory) = center.Produce();
                 var number = i;
+                this.clientData.Nodes.Add(new NodeEntity { Name = number.ToString(), });
+                var (listener, clientFactory) = center.Produce();
                 var miner = new DeterministicWallet($"{number}(Miner)");
                 miners.Add(miner);
                 var node = new Node(miner, listener, clientFactory, center.NodeOptions);
                 nodes.Add(node);
-                StatusHelper.Append($"[Node {number}]Genesis Block: {BlockChain.GenesisBlock}", number);
+                Append(new BlockCreatedStatusEntity(BlockChain.GenesisBlock, "Genesis Block"), number);
                 AssignEvent(node, number);
             }
         }
@@ -82,10 +82,10 @@ namespace DebugConsole
             {
                 var node = nodes[i];
                 var number = i;
-                var blocks = node.Engine.BlockChain.GetBlockHeaders(BlockChain.GenesisBlockHead.Hash)
-                    .Select((_, h) => new BlockEntity { Height = h + 2, Hash = _.Hash.ToHex() })
+                var blocks = node.Engine.BlockChain.GetBlocks(BlockChain.GenesisBlockHead.Hash)
+                    .Select((_, h) => new BlockEntity { Height = h + 2, Block = _ })
                     .ToList();
-                this.clientData.Statuses[i].Blocks = blocks;
+                this.clientData.Nodes[i].Blocks = blocks;
             }
 
             //if (Clients != null)
@@ -106,7 +106,6 @@ namespace DebugConsole
         private InMemoryClientServerCenter center = new InMemoryClientServerCenter();
         private int nodeNumber = 2;
         private ClientEntity clientData;
-        StatusHelper StatusHelper;
         private readonly IHubContext<ControlHub> hubcontext;
 
         private void AssignEvent(Node node, int number)
@@ -116,7 +115,7 @@ namespace DebugConsole
                 var engine = sender as Engine;
                 var height = engine.BlockChain.Height;
                 var tailBlock = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash);
-                StatusHelper.Append($"New block created at height[{height:0000}]: {tailBlock}", number);
+                Append(new BlockCreatedStatusEntity(tailBlock, $"New block created at height[{height:0000}]"), number);
 
                 var me = miners[number];
                 // take action only on first node
@@ -140,7 +139,7 @@ namespace DebugConsole
                         {
                             alice.SyncBlockHead(engine);
                             var verify = alice.VerifyTx(engine, utxo.Tx);
-                            StatusHelper.Append($"verify [{utxo.Tx.Hash.ToShort()}]: {verify}", number);
+                            Append($"verify [{utxo.Tx.Hash.ToShort()}]: {verify}", number);
                             h3tx = alice.SendMoney(engine, utxo.Tx, utxo.Index, bob, 20);
                         }
 
@@ -151,7 +150,7 @@ namespace DebugConsole
                     {
                         bob.SyncBlockHead(engine);
                         var verify = bob.VerifyTx(engine, h3tx);
-                        StatusHelper.Append($"verify [{h3tx.Hash.ToShort()}]: {verify}", number);
+                        Append($"verify [{h3tx.Hash.ToShort()}]: {verify}", number);
                         bobVerified = verify;
                         if (bobVerified)
                         {
@@ -164,43 +163,23 @@ namespace DebugConsole
 
             node.pool.OnCommandReceived += (object sender, Command e) =>
             {
-                StatusHelper.Append($"Command[{e.CommandType}] received", number);
+                Append(new CommandReceivedStatusEntity(e.CommandType), number);
             };
         }
 
-    }
-
-    public class StatusHelper
-    {
-        private readonly ClientEntity clientData;
-
-        public StatusHelper(ClientEntity clientData)
-        {
-            this.clientData = clientData;
-        }
         public void Append(string value, int number)
         {
-            var list = clientData.Statuses[number].Status;
+            Append(new PlainStatusEntity(value), number);
+        }
+
+        public void Append(StatusEntity value, int number)
+        {
+            var list = clientData.Nodes[number].Status;
             list.Insert(0, value);
             var len = list.Count;
             if (len > 20) list.RemoveRange(20, len - 20);
         }
+
     }
 
-    public class BlockEntity
-    {
-        public string Hash { get; set; }
-        public int Height { get; set; }
-    }
-
-    public class StatusEntity
-    {
-        public string Name { get; set; }
-        public List<BlockEntity> Blocks { get; set; } = new List<BlockEntity>();
-        public List<string> Status { get; set; } = new List<string>();
-    }
-    public class ClientEntity
-    {
-        public List<StatusEntity> Statuses { get; set; } = new List<StatusEntity>();
-    }
 }

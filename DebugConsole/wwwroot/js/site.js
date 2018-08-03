@@ -13,55 +13,20 @@
 
     connection.start().catch(err => console.error(err.toString()));
 
-    document.getElementById("sendButton").addEventListener("click", event => {
-        const user = document.getElementById("userInput").value;
-        const message = document.getElementById("messageInput").value;
-        connection.invoke("SendMessage", user, message).catch(err => console.error(err.toString()));
-        event.preventDefault();
+    Vue.filter('short', function (value) {
+        if (!value) return ''
+        value = value.toString()
+        return value.slice(0, 10);
     });
 
-    $('#start').click((event) => {
-        connection.invoke("Start").catch(err => console.error(err.toString()));
-        event.preventDefault();
+    Vue.component('block', {
+        template: '#block-template',
+        props: ['block'],
     });
-
-    $('#stop').click((event) => {
-        connection.invoke("Stop").catch(err => console.error(err.toString()));
-        event.preventDefault();
-    });
-
-    var v = {
-        author: "hh",
-        statuses: [
-            {
-                name: "1",
-                blocks: [
-                    {
-                        height: 2,
-                        hash: "00000944266FC1E0D9C294F1130645E0052209811470B08128D96195790C24C0",
-                    },]
-            },
-            {
-                name: "2",
-                blocks: [
-                    {
-                        height: 2,
-                        hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
-                    },
-                    {
-                        height: 3,
-                        hash: "abcdefghijklmnopqrstuvabcdefghijklmnopqrstuv",
-                    },
-                ]
-            },
-        ]
-    };
-    //var html =$.templates("#statusTemplate").render(v);
-    //$(html).appendTo("#template-container");
 
     var app = new Vue({
         el: '#app',
-        data: v,
+        data: testdata,
         methods: {
             start: function () {
                 connection.invoke("Start").catch(err => console.error(err.toString()));
@@ -75,11 +40,8 @@
     setTimeout(() => { app.data = {} }, 1000);
 
     connection.on("Update", (data) => {
-        //var html = $.templates("#statusTemplate").render(data);
-        //$(html).appendTo("#template-container");
         console.log("received", data);
         Object.assign(app, data);
-        //app.data = data;
     });
 });
 
