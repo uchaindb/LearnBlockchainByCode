@@ -32,7 +32,7 @@ namespace UChainDB.Example.Chain.Core
 
         private readonly int MaxTxNumberInBlock = 1000;
         internal readonly int RewardOfBlock = 50;
-        private bool isDisposing = false;
+        private bool cancelSearchNonce = false;
 
         public BlockChain()
         {
@@ -68,7 +68,8 @@ namespace UChainDB.Example.Chain.Core
             var blockhead = block.Head;
 
             blockhead.Version = BlockChainVersion;
-            blockhead = FindValidBlock(blockhead, Difficulty, ref this.isDisposing);
+            this.cancelSearchNonce = false;
+            blockhead = FindValidBlock(blockhead, Difficulty, ref this.cancelSearchNonce);
             if (blockhead == null) return null;
 
             this.BlockDictionary[block.Hash] = block;
@@ -81,18 +82,24 @@ namespace UChainDB.Example.Chain.Core
         {
             this.BlockDictionary[block.Hash] = block;
             this.InitBlocks(block.Head);
-            this.TryMoveSyncTail(block.Head);
+            if (this.TryMoveSyncTail(block.Head))
+            {
+                this.cancelSearchNonce = true;
+            }
             this.InitBlocks(block.Head);
         }
 
-        private void TryMoveSyncTail(BlockHead newTail)
+        private bool TryMoveSyncTail(BlockHead newTail)
         {
             var cnow = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, this.Tail.Hash).Count();
             var cnew = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, newTail.Hash).Count();
             if (cnew > cnow)
             {
                 MaintainBlockChain(newTail);
+                return true;
             }
+
+            return false;
         }
 
         private (bool ret, string error) CheckQueueOfTx(Transaction tx)
@@ -258,7 +265,7 @@ namespace UChainDB.Example.Chain.Core
 
         public void Dispose()
         {
-            this.isDisposing = true;
+            this.cancelSearchNonce = true;
         }
     }
 }
