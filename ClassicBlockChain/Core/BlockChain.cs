@@ -6,7 +6,7 @@ using UChainDB.Example.Chain.Entity;
 
 namespace UChainDB.Example.Chain.Core
 {
-    public class BlockChain
+    public class BlockChain : IDisposable
     {
         static BlockChain()
         {
@@ -32,6 +32,7 @@ namespace UChainDB.Example.Chain.Core
 
         private readonly int MaxTxNumberInBlock = 1000;
         internal readonly int RewardOfBlock = 50;
+        private bool isDisposing = false;
 
         public BlockChain()
         {
@@ -67,7 +68,8 @@ namespace UChainDB.Example.Chain.Core
             var blockhead = block.Head;
 
             blockhead.Version = BlockChainVersion;
-            blockhead = FindValidBlock(blockhead, Difficulty);
+            blockhead = FindValidBlock(blockhead, Difficulty, ref this.isDisposing);
+            if (blockhead == null) return null;
 
             this.BlockDictionary[block.Hash] = block;
             this.InitBlocks(blockhead);
@@ -129,9 +131,15 @@ namespace UChainDB.Example.Chain.Core
 
         private static BlockHead FindValidBlock(BlockHead originBlock, int difficulty)
         {
+            var flag = false;
+            return FindValidBlock(originBlock, difficulty, ref flag);
+        }
+
+        private static BlockHead FindValidBlock(BlockHead originBlock, int difficulty, ref bool stopFinding)
+        {
             var block = originBlock;
             block.Nonce = 0;
-            while (true)
+            while (!stopFinding)
             {
                 block.Nonce++;
                 //if (((byte[])block.Hash).Take(difficulty).All(_ => _ == 0))
@@ -140,6 +148,8 @@ namespace UChainDB.Example.Chain.Core
                     return block;
                 }
             }
+
+            return null;
         }
 
         internal Transaction[] DequeueTxs()
@@ -246,5 +256,9 @@ namespace UChainDB.Example.Chain.Core
             return indexes.ToArray();
         }
 
+        public void Dispose()
+        {
+            this.isDisposing = true;
+        }
     }
 }

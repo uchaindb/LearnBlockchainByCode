@@ -61,7 +61,7 @@ namespace UChainDB.Example.Chain.Core
                 try
                 {
                     var block = this.GenerateBlock();
-                    this.OnNewBlockCreated?.Invoke(this, block);
+                    if (block != null) this.OnNewBlockCreated?.Invoke(this, block);
                 }
                 catch (Exception ex)
                 {
@@ -138,6 +138,7 @@ namespace UChainDB.Example.Chain.Core
 
         public void Dispose()
         {
+            this.BlockChain.Dispose();
             this.disposing = true;
             this.thWorker.Join();
         }
