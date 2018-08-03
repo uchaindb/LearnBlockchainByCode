@@ -15,16 +15,37 @@ namespace DebugConsole
 {
     public class ControlHub : Hub
     {
-        public ControlHub(IHubContext<ControlHub> hubcontext)
+        private readonly IHubContext<ControlHub> hubcontext;
+        private readonly ControlService controlService;
+
+        public ControlHub(IHubContext<ControlHub> hubcontext, ControlService controlService)
         {
             this.hubcontext = hubcontext;
+            this.controlService = controlService;
         }
-        private Timer updateTimer;
         public async Task SendMessage(string user, string message)
         {
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
 
+        public async Task Start()
+        {
+            await this.controlService.Start();
+        }
+
+        public async Task Stop()
+        {
+            await this.controlService.Stop();
+        }
+    }
+
+    public class ControlService
+    {
+        public ControlService(IHubContext<ControlHub> hubcontext)
+        {
+            this.hubcontext = hubcontext;
+        }
+        private Timer updateTimer;
         public async Task Start()
         {
             this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));
@@ -159,7 +180,10 @@ namespace DebugConsole
         }
         public void Append(string value, int number)
         {
-            clientData.Statuses[number].Status.Add(value);
+            var list = clientData.Statuses[number].Status;
+            list.Insert(0, value);
+            var len = list.Count;
+            if (len > 20) list.RemoveRange(20, len - 20);
         }
     }
 

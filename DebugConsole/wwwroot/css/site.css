@@ -41,3 +41,15 @@ ul.list-group {
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
 }
+
+.table td.text-truncate {
+    max-width: 100px;
+}
+
+    .table td.text-truncate span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        max-width: 100%;
+    }

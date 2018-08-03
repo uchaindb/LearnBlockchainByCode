@@ -1,75 +1,48 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
-<div class="container">
-    <div class="panel panel-default">
-        <div class="panel-heading">Status</div>
-        <div class="panel-body">
-            <button class="btn btn-primary" id="start"><span class="glyphicon glyphicon-play"></span> Start</button>
-            <button class="btn btn-primary" id="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
-
-        </div>
-        <div class="panel-body">
-            <div class="row" id="template-container">
+<div id="app">
+    <div class="container">
+        <div class="panel panel-default">
+            <div class="panel-heading">Status</div>
+            <div class="panel-body">
+                <button class="btn btn-primary" id="start" v-on:click="start"><span class="glyphicon glyphicon-play"></span> Start</button>
+                <button class="btn btn-primary" id="stop" v-on:click="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div v-for="status in statuses" class="col-sm-6">
+                        <div class="panel panel-success">
+                            <div class="panel-heading">{{status.name}}</div>
+                            <div class="panel-body">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">Status</div>
+                                    <ul class="list-group">
+                                        <li v-for="line in status.status" class="list-group-item">{{line}}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Height</th>
+                                        <th>Hash</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="block in status.blocks">
+                                        <td>{{block.height}}</td>
+                                        <td class="text-truncate"><span v-bind:title="block.hash">{{block.hash}}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-<script type="text/x-jsrender" id="statusTemplate">
-    {^{for statuses}}
-    <div class="col-sm-6">
-        <div class="panel panel-success">
-            <div class="panel-heading">{^{>name}}</div>
-            <div class="panel-body">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Status</div>
-                    <ul class="list-group">
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                        <li class="list-group-item">dhh</li>
-                    </ul>
-                </div>
-            </div>
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Height</th>
-                        <th>Hash</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {^{for blocks}}
-                    <tr>
-                        <td>{^{>height}}</td>
-                        <td>{^{>hash}}</td>
-                    </tr>
-                    {{/for}}
-
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {{/for}}
-</script>
 
 <div class="container">
     <div class="row">&nbsp;</div>

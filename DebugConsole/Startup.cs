@@ -31,6 +31,7 @@ namespace DebugConsole
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSignalR();
+            services.AddSingleton<ControlService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
