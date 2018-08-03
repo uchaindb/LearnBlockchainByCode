@@ -4,56 +4,56 @@
 <div id="app">
     <div class="container">
         <div class="panel panel-default">
-            <div class="panel-heading">Status</div>
+            <div class="panel-heading">Control</div>
             <div class="panel-body">
                 <button class="btn btn-primary" id="start" v-on:click="start"><span class="glyphicon glyphicon-play"></span> Start</button>
                 <button class="btn btn-primary" id="stop" v-on:click="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
             </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div v-for="node in nodes" class="col-sm-6">
-                        <div class="panel panel-success">
-                            <div class="panel-heading">{{node.name}}</div>
-                            <div class="panel-body">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">Status</div>
-                                    <ul class="list-group">
-                                        <li v-for="status in node.status" class="list-group-item status-item">
-                                            <div v-if="status.type == 0">
-                                                <span class="label label-info">Output</span>
-                                                {{status.text}}
-                                            </div>
-                                            <div v-if="status.type == 1">
-                                                <span class="label label-info">Command</span>
-                                                <span class="label label-primary">{{status.command}}</span> received
-                                            </div>
-                                            <div v-if="status.type == 2">
-                                                <span class="label label-info">Block</span>
-                                                {{status.text}}
-                                                <blockquote>
-                                                    <block v-bind:block="status.block"></block>
-                                                </blockquote>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row flex-row flex-nowrap">
+            <div v-for="node in nodes" class="col-xs-6">
+                <div class="panel panel-success">
+                    <div class="panel-heading">{{node.name}}</div>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Status</div>
+                            <ul class="list-group">
+                                <li v-for="status in node.status" class="list-group-item status-item">
+                                    <div v-if="status.type == 0">
+                                        <span class="label label-info">Output</span>
+                                        {{status.text}}
+                                    </div>
+                                    <div v-if="status.type == 1">
+                                        <span class="label label-info">Command</span>
+                                        <span class="label label-primary">{{status.command}}</span> received
+                                    </div>
+                                    <div v-if="status.type == 2">
+                                        <span class="label label-info">Block</span>
+                                        {{status.text}}
+                                        <blockquote>
+                                            <block v-bind:block="status.block"></block>
+                                        </blockquote>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel-group" v-bind:id="'#accordion' + node.name" role="tablist" aria-multiselectable="true">
+                        <div v-for="block in node.blocks" class="panel panel-default">
+                            <div class="panel-heading" role="tab">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" v-bind:data-parent="'#accordion' + node.name"
+                                       v-bind:href="'#' + node.name + '-' + block.height">
+                                        {{block.height}} - {{block.block.hash | short}}
+                                        <span class="label label-info">{{block.block.txs.length}}</span>
+                                    </a>
+                                </h4>
                             </div>
-                            <div class="panel-group" v-bind:id="'#accordion' + node.name" role="tablist" aria-multiselectable="true">
-                                <div v-for="block in node.blocks" class="panel panel-default">
-                                    <div class="panel-heading" role="tab">
-                                        <h4 class="panel-title">
-                                            <a class="collapsed" role="button" data-toggle="collapse" v-bind:data-parent="'#accordion' + node.name"
-                                               v-bind:href="'#' + node.name + '-' + block.height">
-                                                {{block.height}} - {{block.block.hash | short}}
-                                                <span class="label label-info">{{block.block.txs.length}}</span>
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div v-bind:id="node.name + '-' + block.height" class="panel-collapse collapse" role="tabpanel">
-                                        <div class="panel-body">
-                                            <block v-bind:block="block.block"></block>
-                                        </div>
-                                    </div>
+                            <div v-bind:id="node.name + '-' + block.height" class="panel-collapse collapse" role="tabpanel">
+                                <div class="panel-body">
+                                    <block v-bind:block="block.block"></block>
                                 </div>
                             </div>
                         </div>
@@ -72,11 +72,11 @@
             <li v-for="tx in block.txs">
                 <span class="glyphicon glyphicon-transfer">{{tx.hash | short}}</span>
                 <span v-if="tx.inputTxs && tx.inputTxs.length > 0">
-                <span v-for="tx in tx.inputTxs">
-                    <span class="label label-danger">
-                        {{tx.prevTxHash | short}}[{{tx.prevTxIndex}}]: {{tx.signature | short}}
+                    <span v-for="tx in tx.inputTxs">
+                        <span class="label label-danger">
+                            {{tx.prevTxHash | short}}[{{tx.prevTxIndex}}]: {{tx.signature | short}}
+                        </span>
                     </span>
-                </span>
                 </span>
                 <span v-else>
                     <kbd>CoinBase</kbd>

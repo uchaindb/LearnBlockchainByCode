@@ -57,3 +57,24 @@ ul.list-group {
 .status-item blockquote {
     font-size: inherit;
 }
+
+row > .col-xs-6 {
+    display: flex;
+    flex: 0 0 40%;
+    max-width: 40%
+}
+
+.flex-nowrap {
+    -webkit-flex-wrap: nowrap !important;
+    -ms-flex-wrap: nowrap !important;
+    flex-wrap: nowrap !important;
+}
+
+.flex-row {
+    display: flex;
+    -webkit-box-orient: horizontal !important;
+    -webkit-box-direction: normal !important;
+    -webkit-flex-direction: row !important;
+    -ms-flex-direction: row !important;
+    flex-direction: row !important;
+}
