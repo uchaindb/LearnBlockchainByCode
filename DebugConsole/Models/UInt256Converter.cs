@@ -1,9 +1,9 @@
 ﻿namespace UChainDB.BingChain.Contracts.Json
 {
-    using System;
-    using System.Linq;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using System;
+    using System.Linq;
     using UChainDB.Example.Chain.Entity;
 
     public class UInt256Converter : JsonConverter

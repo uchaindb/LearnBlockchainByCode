@@ -1,5 +1,3 @@
-using System;
-
 namespace DebugConsole.Models
 {
     public class ErrorViewModel
