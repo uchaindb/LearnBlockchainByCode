@@ -160,7 +160,7 @@ namespace DebugConsole
             node.pool.OnCommandReceived += (object sender, Command e) =>
             {
                 var blkcmd = e as BlockCommnad;
-                Append(new CommandReceivedStatusEntity(e.CommandType, blkcmd?.Block?.Hash?.ToHex()), number);
+                Append(new CommandReceivedStatusEntity(e.CommandType, blkcmd?.Block?.Hash?.ToShort()), number);
             };
         }
 
