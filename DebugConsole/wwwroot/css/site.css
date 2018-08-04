@@ -36,8 +36,8 @@ body {
     }
 }
 
-ul.list-group {
-    max-height: 200px;
+ul.status-box.list-group {
+    height: 200px;
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
 }
@@ -58,10 +58,11 @@ ul.list-group {
     font-size: inherit;
 }
 
-row > .col-xs-6 {
-    display: flex;
+.row > .col-xs-6 {
+    /*display: flex;*/
     flex: 0 0 40%;
-    max-width: 40%
+    width: 40%;
+    max-width: 400px;
 }
 
 .flex-nowrap {

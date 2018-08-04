@@ -7,16 +7,34 @@
         <div class="panel panel-default">
             <div class="panel-heading">Control</div>
             <div class="panel-body">
-                <button v-if="!isRunning" class="btn btn-primary" id="start" v-on:click="start"><span class="glyphicon glyphicon-play"></span> Start</button>
-                <button v-if="isRunning" class="btn btn-primary" id="stop" v-on:click="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
-                <button v-if="isRunning" class="btn btn-primary" id="addNode" v-on:click="addNode"><span class="glyphicon glyphicon-plus"></span> Add Node</button>
-                <div class="btn-group" role="group">
-                    <a v-bind:href="'#' + node.name + (index==nodes.length - 1 ? 'end' : '')" class="btn btn-success" v-for="(node,index) in nodes">{{node.name}}</a>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <span class="">Control</span>
+                                &nbsp;
+                                <button v-if="!isRunning" class="btn btn-primary" id="start" v-on:click="start"><span class="glyphicon glyphicon-play"></span> Start</button>
+                                <button v-if="isRunning" class="btn btn-danger" id="stop" v-on:click="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+                                <button v-if="isRunning" class="btn btn-warning" id="addNode" v-on:click="addNode"><span class="glyphicon glyphicon-plus"></span> Add Node</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <span class="">Navigate to</span>
+                                &nbsp;
+                                <div class="btn-group" role="group">
+                                    <a v-bind:href="'#' + node.name + (index==nodes.length - 1 ? 'end' : '')" class="btn btn-success node-anchor" v-for="(node,index) in nodes">{{node.name}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container-fluid" style="position:absolute; top: 150px;">
+    <div class="container-fluid" style="position:absolute; top: 200px;">
         <div class="row flex-row flex-nowrap">
             <div v-for="node in nodes" class="col-xs-6">
                 <a v-bind:name="node.name"></a>
@@ -28,7 +46,7 @@
                     <div class="panel-body">
                         <div class="panel panel-default">
                             <div class="panel-heading">Status</div>
-                            <ul class="list-group">
+                            <ul class="list-group status-box">
                                 <li v-for="status in node.status" class="list-group-item status-item">
                                     <div v-if="status.type == 0">
                                         <span class="label label-info">Output</span>

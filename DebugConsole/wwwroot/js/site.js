@@ -46,5 +46,12 @@
         console.log("received", data);
         Object.assign(app, data);
     });
+
+    $(window).on('hashchange', function () {
+        let hash = window.location.hash;
+        $('a.node-anchor').removeClass('active');
+        $('a[href="' + hash + '"].node-anchor').addClass('active');
+        console.log("hash", hash);
+    });
 });
 

@@ -26,7 +26,7 @@ namespace DebugConsole
         private bool bobVerified = false;
         private List<Node> nodes;
         private InMemoryClientServerCenter center;
-        private int nodeNumber = 2;
+        private int nodeNumber;
         private ClientEntity clientData;
 
         public ControlService(IHubContext<ControlHub> hubcontext)
@@ -44,6 +44,7 @@ namespace DebugConsole
             this.bob = new SimpleWallet("Bob");
             this.nodes = new List<Node>();
             this.center = new InMemoryClientServerCenter();
+            this.nodeNumber = 2;
 
             this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));
             this.clientData = new ClientEntity();
@@ -94,7 +95,7 @@ namespace DebugConsole
                 var node = nodes[i];
                 var number = i;
                 var blocks = node.Engine.BlockChain.GetBlocks(BlockChain.GenesisBlockHead.Hash)
-                    .Select((_, h) => new BlockEntity { Height = h + 2, Block = _ })
+                    .Select((_, h) => new BlockEntity { Height = h + 1, Block = _ })
                     .ToList();
                 this.clientData.Nodes[i].Blocks = blocks;
             }
