@@ -56,7 +56,7 @@ namespace UChainDB.Example.Chain.Network
 
         public void Start()
         {
-            this.reconnectTimer = new Timer(async (_) => await this.ConnectAllAsync(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));
+            this.reconnectTimer = new Timer((_) => this.ConnectAll(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));
             this.thReceive = new Thread(Receive);
             this.thReceive.Start();
             this.isReceiving = true;
@@ -76,7 +76,7 @@ namespace UChainDB.Example.Chain.Network
                     foreach (var node in internalnodes)
                     {
                         if (node.ApiClient == null) continue;
-                        var command = node.ApiClient.ReceiveAsync().Result;
+                        var command = node.ApiClient.Receive();
                         if (command == null) continue;
                         OnCommandReceived?.Invoke(this, command);
                         command.OnReceived(this.selfNode, node);
@@ -92,7 +92,7 @@ namespace UChainDB.Example.Chain.Network
             }
         }
 
-        private async Task ConnectAllAsync()
+        private void ConnectAll()
         {
             ConnectionNode[] internalnodes;
             lock (this.nodes)
@@ -104,11 +104,11 @@ namespace UChainDB.Example.Chain.Network
             }
             foreach (var node in internalnodes)
             {
-                await this.TryConnectAsync(node);
+                this.TryConnect(node);
             }
         }
 
-        public async Task BroadcastAsync(CommandBase command)
+        public void Broadcast(CommandBase command)
         {
             ConnectionNode[] internalnodes;
             lock (this.nodes)
@@ -119,11 +119,11 @@ namespace UChainDB.Example.Chain.Network
             }
             foreach (var node in internalnodes)
             {
-                await node.ApiClient.SendAsync(command);
+                node.ApiClient.Send(command);
             }
         }
 
-        public async void Dispose()
+        public void Dispose()
         {
             this.isReceiving = false;
             this.reconnectTimer?.Dispose();
@@ -136,14 +136,13 @@ namespace UChainDB.Example.Chain.Network
             }
             foreach (var node in internalnodes)
             {
-                //await node.ApiClient.CloseAsync(WebSocketCloseStatus.ProtocolError, "close", CancellationToken.None);
-                await node.ApiClient.CloseAsync(CancellationToken.None);
+                node.ApiClient.Close();
                 node.ApiClient?.Dispose();
             }
             this.thReceive.Join();
         }
 
-        private async Task TryConnectAsync(ConnectionNode node)
+        private void TryConnect(ConnectionNode node)
         {
             // dispose previous client if exist
             if (node.ApiClient != null)
@@ -155,7 +154,7 @@ namespace UChainDB.Example.Chain.Network
             var client = this.apiClientFactory.Produce();
             try
             {
-                await client.ConnectAsync(node.Address);
+                client.Connect(node.Address);
                 node.ApiClient = client;
             }
             catch (Exception)
@@ -173,7 +172,7 @@ namespace UChainDB.Example.Chain.Network
 
             try
             {
-                await client.SendAsync(new VersionCommand());
+                client.Send(new VersionCommand());
             }
             catch (Exception ex)
             {
@@ -184,7 +183,7 @@ namespace UChainDB.Example.Chain.Network
             {
                 if (node.Status != ConnectionStatus.Connected)
                 {
-                    await client.CloseAsync();
+                    client.Close();
                     client.Dispose();
                 }
             }

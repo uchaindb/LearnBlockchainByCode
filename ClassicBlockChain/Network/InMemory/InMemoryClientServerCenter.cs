@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UChainDB.Example.Chain.Core;
-using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
@@ -14,6 +11,21 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         private ConcurrentDictionary<string, InMemoryListener> dicServers = new ConcurrentDictionary<string, InMemoryListener>();
         private ConcurrentDictionary<string, List<InMemoryClientBase>> dicPeers = new ConcurrentDictionary<string, List<InMemoryClientBase>>();
+
+        public InMemoryClientServerCenter()
+        {
+        }
+
+        public NodeOptions NodeOptions { get => new NodeOptions { WellKnownNodes = this.ProduceWellKnownNodes(), IntervalInMilliseconds = 300 }; }
+
+        public string[] ProduceWellKnownNodes() => Enumerable.Range(0, this.number).Select(_ => _.ToString()).ToArray();
+
+        public (IListener listener, IPeerFactory clientFactory) Produce()
+        {
+            var server = this.ProduceApiServer();
+            var clientFactory = this.ProduceApiClientFactory(server);
+            return (server, clientFactory);
+        }
 
         internal void AddPeer(InMemoryClientBase client)
         {
@@ -41,13 +53,10 @@ namespace UChainDB.Example.Chain.Network.InMemory
             }
         }
 
-        public InMemoryClientServerCenter()
+        internal bool Connect(string baseAddress, ActiveInMemoryClient client)
         {
+            return this.dicServers[baseAddress].Connect(client);
         }
-
-        public NodeOptions NodeOptions { get => new NodeOptions { WellKnownNodes = this.ProduceWellKnownNodes(), IntervalInMilliseconds = 300 }; }
-
-        public string[] ProduceWellKnownNodes() => Enumerable.Range(0, this.number).Select(_ => _.ToString()).ToArray();
 
         private InMemoryListener ProduceApiServer()
         {
@@ -61,18 +70,6 @@ namespace UChainDB.Example.Chain.Network.InMemory
         private IPeerFactory ProduceApiClientFactory(InMemoryListener server)
         {
             return new InMemoryClientFactory(this, server);
-        }
-
-        public (IListener listener, IPeerFactory clientFactory) Produce()
-        {
-            var server = this.ProduceApiServer();
-            var clientFactory = this.ProduceApiClientFactory(server);
-            return (server, clientFactory);
-        }
-
-        internal async Task<bool> ConnectAsync(string baseAddress, ActiveInMemoryClient client)
-        {
-            return await this.dicServers[baseAddress].ConnectAsync(client);
         }
     }
 }

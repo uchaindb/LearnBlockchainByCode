@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
@@ -7,23 +6,15 @@ namespace UChainDB.Example.Chain.Network.InMemory
     {
         private readonly InMemoryClientServerCenter center;
 
-        public string Address { get;}
-
-        public event EventHandler<IPeer> OnPeerConnected;
-
         public InMemoryListener(InMemoryClientServerCenter center, string address)
         {
             this.center = center;
             this.Address = address;
         }
 
-        internal Task<bool> ConnectAsync(ActiveInMemoryClient client)
-        {
-            var peer = new PassiveInMemoryClient(this.center, client );
-            this.center.AddPeer(peer);
-            this.OnPeerConnected?.Invoke(this, peer);
-            return Task.FromResult(true);
-        }
+        public event EventHandler<IPeer> OnPeerConnected;
+
+        public string Address { get; }
 
         public void Start()
         {
@@ -31,6 +22,14 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         public void Dispose()
         {
+        }
+
+        internal bool Connect(ActiveInMemoryClient client)
+        {
+            var peer = new PassiveInMemoryClient(this.center, client);
+            this.center.AddPeer(peer);
+            this.OnPeerConnected?.Invoke(this, peer);
+            return true;
         }
     }
 }

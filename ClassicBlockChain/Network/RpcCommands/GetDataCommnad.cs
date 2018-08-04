@@ -21,7 +21,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                         if (tx != null)
                         {
                             var responseCmd = new TransactionCommnad { Transaction = tx };
-                            connectionNode.ApiClient.SendAsync(responseCmd);
+                            connectionNode.ApiClient.Send(responseCmd);
                         }
                         break;
                     case InventoryType.Block:
@@ -29,7 +29,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                         if (blk != null)
                         {
                             var responseCmd = new BlockCommnad { Block = blk };
-                            connectionNode.ApiClient.SendAsync(responseCmd);
+                            connectionNode.ApiClient.Send(responseCmd);
                         }
                         break;
                     default:

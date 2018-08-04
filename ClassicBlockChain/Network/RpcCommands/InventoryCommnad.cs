@@ -14,7 +14,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
             var bc = engine.BlockChain;
 
             var responseCmd = new GetDataCommnad { Items = this.Items };
-            connectionNode.ApiClient.SendAsync(responseCmd);
+            connectionNode.ApiClient.Send(responseCmd);
         }
     }
 }

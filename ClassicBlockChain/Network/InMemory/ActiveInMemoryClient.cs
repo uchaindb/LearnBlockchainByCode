@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace UChainDB.Example.Chain.Network.InMemory
+﻿namespace UChainDB.Example.Chain.Network.InMemory
 {
     public class ActiveInMemoryClient : InMemoryClientBase
     {
@@ -10,10 +7,10 @@ namespace UChainDB.Example.Chain.Network.InMemory
             this.BaseAddress = address;
         }
 
-        public override async Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken))
+        public override void Connect(string connectionString)
         {
             this.TargetAddress = connectionString;
-            if (await this.center.ConnectAsync(connectionString, this))
+            if (this.center.Connect(connectionString, this))
             {
                 this.IsConnected = true;
                 this.center.AddPeer(this);

@@ -13,12 +13,12 @@ namespace UChainDB.Example.Chain.Network
         string TargetAddress { get; }
         string BaseAddress { get; }
 
-        Task SendAsync(CommandBase command, CancellationToken cancellationToken = default(CancellationToken));
+        void Send(CommandBase command);
 
-        Task<CommandBase> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken));
+        CommandBase Receive();
 
-        Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken));
+        void Connect(string connectionString);
 
-        Task CloseAsync(object closingMessage = null, CancellationToken cancellationToken = default(CancellationToken));
+        void Close(object closingMessage = null);
     }
 }

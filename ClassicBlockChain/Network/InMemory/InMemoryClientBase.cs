@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
     public abstract class InMemoryClientBase : IPeer
     {
+        protected internal InMemoryClientBase opposite;
         protected readonly InMemoryClientServerCenter center;
-        internal protected InMemoryClientBase opposite;
-
-        public string TargetAddress { get; protected set; }
-        public string BaseAddress { get; protected set; }
-
         protected Queue<CommandBase> receivedData = new Queue<CommandBase>();
 
         public InMemoryClientBase(InMemoryClientServerCenter center)
@@ -21,43 +14,41 @@ namespace UChainDB.Example.Chain.Network.InMemory
             this.center = center;
         }
 
+        public string TargetAddress { get; protected set; }
+        public string BaseAddress { get; protected set; }
         public bool IsConnected { get; protected set; }
 
         public string State => "Normal";
 
-        public virtual Task CloseAsync(object closingMessage = null, CancellationToken cancellationToken = default(CancellationToken))
+        public abstract void Connect(string connectionString);
+
+        public void Send(CommandBase command)
+        {
+            this.opposite.receivedData.Enqueue(command);
+        }
+
+        public CommandBase Receive()
+        {
+            if (this.receivedData.TryDequeue(out var ret))
+            {
+                return ret;
+            }
+            return null;
+        }
+
+        public void Close(object closingMessage = null)
         {
             this.IsConnected = false;
             this.center.RemovePeer(this);
-            return Task.CompletedTask;
         }
-
-        public abstract Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken));
 
         public virtual void Dispose()
         {
         }
 
-        public virtual Task<CommandBase> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken))
+        internal void InternalSend(CommandBase command)
         {
-            if (this.receivedData.TryDequeue(out var ret))
-            {
-                return Task.FromResult(ret);
-            }
-            return Task.FromResult<CommandBase>(null);
-        }
-
-        public virtual async Task SendAsync(CommandBase command, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            //await this.center.SendAsync(this.TargetAddress, command);
-            this.opposite.receivedData.Enqueue(command);
-        }
-
-        internal Task InternalSendAsync(CommandBase command)
-        {
-            //this.opposite.receivedData.Enqueue(command);
             this.receivedData.Enqueue(command);
-            return Task.CompletedTask;
         }
     }
 }

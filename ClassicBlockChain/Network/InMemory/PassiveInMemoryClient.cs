@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
@@ -14,7 +12,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
             this.TargetAddress = client.BaseAddress;
         }
 
-        public override Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken))
+        public override void Connect(string connectionString)
         {
             throw new NotSupportedException();
         }

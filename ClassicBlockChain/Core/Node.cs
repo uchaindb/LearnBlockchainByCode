@@ -35,13 +35,13 @@ namespace UChainDB.Example.Chain.Core
 
         private void Engine_OnNewTxCreated(object sender, Transaction e)
         {
-            this.pool.BroadcastAsync(new TransactionCommnad { Transaction = e }).Wait();
+            this.pool.Broadcast(new TransactionCommnad { Transaction = e });
         }
 
         private void Engine_OnNewBlockCreated(object sender, BlockHead e)
         {
             var blk = this.Engine.BlockChain.GetBlock(e.Hash);
-            this.pool.BroadcastAsync(new BlockCommnad { Block = blk }).Wait();
+            this.pool.Broadcast(new BlockCommnad { Block = blk });
         }
 
         public void Dispose()

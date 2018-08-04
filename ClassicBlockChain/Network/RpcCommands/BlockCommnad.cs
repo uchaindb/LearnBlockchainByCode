@@ -27,7 +27,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                     BlockLocators = engine.BlockChain.GetBlockLocatorHashes(),
                     LastBlockHash = bc.Tail.Hash,
                 };
-                connectionNode.ApiClient.SendAsync(getblkcmd);
+                connectionNode.ApiClient.Send(getblkcmd);
             }
         }
     }
