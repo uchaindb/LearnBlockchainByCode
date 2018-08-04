@@ -25,7 +25,7 @@ namespace DebugConsole
         private Transaction h3tx;
         private bool bobVerified = false;
         private List<Node> nodes;
-        private InMemoryClientServerCenter center;
+        private InMemoryConnectionCenter center;
         private int nodeNumber;
         private ClientEntity clientData;
 
@@ -43,7 +43,7 @@ namespace DebugConsole
             this.alice = new SimpleWallet("Alice");
             this.bob = new SimpleWallet("Bob");
             this.nodes = new List<Node>();
-            this.center = new InMemoryClientServerCenter();
+            this.center = new InMemoryConnectionCenter();
             this.nodeNumber = 2;
 
             this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));

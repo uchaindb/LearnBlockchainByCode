@@ -4,9 +4,9 @@ namespace UChainDB.Example.Chain.Network.InMemory
 {
     public class InMemoryListener : IListener
     {
-        private readonly InMemoryClientServerCenter center;
+        private readonly InMemoryConnectionCenter center;
 
-        public InMemoryListener(InMemoryClientServerCenter center, string address)
+        public InMemoryListener(InMemoryConnectionCenter center, string address)
         {
             this.center = center;
             this.Address = address;
@@ -24,11 +24,11 @@ namespace UChainDB.Example.Chain.Network.InMemory
         {
         }
 
-        internal bool Connect(ActiveInMemoryClient client)
+        internal bool Connect(ActiveInMemoryPeer peer)
         {
-            var peer = new PassiveInMemoryClient(this.center, client);
-            this.center.AddPeer(peer);
-            this.OnPeerConnected?.Invoke(this, peer);
+            var oppositePeer = new PassiveInMemoryPeer(this.center, peer);
+            this.center.AddPeer(oppositePeer);
+            this.OnPeerConnected?.Invoke(this, oppositePeer);
             return true;
         }
     }

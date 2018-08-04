@@ -3,13 +3,13 @@ using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
-    public abstract class InMemoryClientBase : IPeer
+    public abstract class InMemoryPeerBase : IPeer
     {
-        protected internal InMemoryClientBase opposite;
-        protected readonly InMemoryClientServerCenter center;
+        protected internal InMemoryPeerBase opposite;
+        protected readonly InMemoryConnectionCenter center;
         protected Queue<CommandBase> receivedData = new Queue<CommandBase>();
 
-        public InMemoryClientBase(InMemoryClientServerCenter center)
+        public InMemoryPeerBase(InMemoryConnectionCenter center)
         {
             this.center = center;
         }

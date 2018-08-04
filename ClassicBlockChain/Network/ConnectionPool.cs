@@ -158,7 +158,7 @@ namespace UChainDB.Example.Chain.Network
 
         private void TryConnect(ConnectionNode node)
         {
-            // dispose previous client if exist
+            // dispose previous peer if exist
             if (node.Peer != null)
             {
                 node.Peer.Dispose();

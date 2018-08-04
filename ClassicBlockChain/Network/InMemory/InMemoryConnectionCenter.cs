@@ -5,14 +5,14 @@ using UChainDB.Example.Chain.Entity;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
-    public class InMemoryClientServerCenter
+    public class InMemoryConnectionCenter
     {
         private int number = 0;
 
         private ConcurrentDictionary<string, InMemoryListener> dicServers = new ConcurrentDictionary<string, InMemoryListener>();
-        private ConcurrentDictionary<string, List<InMemoryClientBase>> dicPeers = new ConcurrentDictionary<string, List<InMemoryClientBase>>();
+        private ConcurrentDictionary<string, List<InMemoryPeerBase>> dicPeers = new ConcurrentDictionary<string, List<InMemoryPeerBase>>();
 
-        public InMemoryClientServerCenter()
+        public InMemoryConnectionCenter()
         {
         }
 
@@ -20,32 +20,32 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         public string[] ProduceWellKnownNodes() => Enumerable.Range(0, this.number).Select(_ => _.ToString()).ToArray();
 
-        public (IListener listener, IPeerFactory clientFactory) Produce()
+        public (IListener listener, IPeerFactory peerFactory) Produce()
         {
             var listener = this.ProduceListener();
             var peerFactory = this.ProducePeerFactory(listener);
             return (listener, peerFactory);
         }
 
-        internal void AddPeer(InMemoryClientBase client)
+        internal void AddPeer(InMemoryPeerBase peer)
         {
-            var key = client.TargetAddress;
+            var key = peer.TargetAddress;
             if (this.dicPeers.ContainsKey(key))
             {
-                this.dicPeers[key].Add(client);
+                this.dicPeers[key].Add(peer);
             }
             else
             {
-                this.dicPeers[key] = new List<InMemoryClientBase>(new[] { client });
+                this.dicPeers[key] = new List<InMemoryPeerBase>(new[] { peer });
             }
         }
 
-        internal void RemovePeer(InMemoryClientBase client)
+        internal void RemovePeer(InMemoryPeerBase peer)
         {
-            var key = client.TargetAddress;
+            var key = peer.TargetAddress;
             if (this.dicPeers.ContainsKey(key))
             {
-                this.dicPeers[key].Remove(client);
+                this.dicPeers[key].Remove(peer);
             }
             else
             {
@@ -53,9 +53,9 @@ namespace UChainDB.Example.Chain.Network.InMemory
             }
         }
 
-        internal bool Connect(string baseAddress, ActiveInMemoryClient client)
+        internal bool Connect(string baseAddress, ActiveInMemoryPeer peer)
         {
-            return this.dicServers[baseAddress].Connect(client);
+            return this.dicServers[baseAddress].Connect(peer);
         }
 
         private InMemoryListener ProduceListener()
@@ -69,7 +69,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         private IPeerFactory ProducePeerFactory(InMemoryListener server)
         {
-            return new InMemoryClientFactory(this, server);
+            return new InMemoryPeerFactory(this, server);
         }
     }
 }

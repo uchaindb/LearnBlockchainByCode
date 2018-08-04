@@ -19,7 +19,7 @@ namespace UChainDB.Example.Chain
         private static Transaction h3tx;
         private static bool bobVerified = false;
         private static List<Node> nodes = new List<Node>();
-        private static InMemoryClientServerCenter center = new InMemoryClientServerCenter();
+        private static InMemoryConnectionCenter center = new InMemoryConnectionCenter();
         private static int nodeNumber = 2;
 
         private static void Main(string[] args)

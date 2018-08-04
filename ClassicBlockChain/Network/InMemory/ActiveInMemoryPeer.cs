@@ -1,8 +1,8 @@
 ﻿namespace UChainDB.Example.Chain.Network.InMemory
 {
-    public class ActiveInMemoryClient : InMemoryClientBase
+    public class ActiveInMemoryPeer : InMemoryPeerBase
     {
-        public ActiveInMemoryClient(InMemoryClientServerCenter center, string address) : base(center)
+        public ActiveInMemoryPeer(InMemoryConnectionCenter center, string address) : base(center)
         {
             this.BaseAddress = address;
         }
