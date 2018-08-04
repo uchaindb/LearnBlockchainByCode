@@ -101,7 +101,7 @@ namespace UChainDB.Example.Chain.Core
             {
                 foreach (var tx in finalTxs)
                 {
-                    this.BlockChain.AddTx(tx);
+                    this.BlockChain.SyncTx(tx);
                 }
             }
             return block;
