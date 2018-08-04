@@ -9,8 +9,8 @@ namespace UChainDB.Example.Chain.Network.InMemory
     {
         private int number = 0;
 
-        private ConcurrentDictionary<string, InMemoryListener> dicServers = new ConcurrentDictionary<string, InMemoryListener>();
-        private ConcurrentDictionary<string, List<InMemoryPeerBase>> dicPeers = new ConcurrentDictionary<string, List<InMemoryPeerBase>>();
+        private readonly ConcurrentDictionary<string, InMemoryListener> dicServers = new ConcurrentDictionary<string, InMemoryListener>();
+        private readonly ConcurrentDictionary<string, List<InMemoryPeerBase>> dicPeers = new ConcurrentDictionary<string, List<InMemoryPeerBase>>();
 
         public InMemoryConnectionCenter()
         {

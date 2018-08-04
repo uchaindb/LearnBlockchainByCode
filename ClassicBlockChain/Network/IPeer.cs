@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network
@@ -9,7 +7,6 @@ namespace UChainDB.Example.Chain.Network
     {
         bool IsConnected { get; }
 
-        string State { get; }
         string TargetAddress { get; }
         string BaseAddress { get; }
 

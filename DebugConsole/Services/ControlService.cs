@@ -35,7 +35,7 @@ namespace DebugConsole
             this.hubcontext = hubcontext;
         }
 
-        public async Task Start()
+        public Task Start()
         {
             this.h2utxo = null;
             this.h3tx = null;
@@ -47,7 +47,8 @@ namespace DebugConsole
             this.center = new InMemoryConnectionCenter();
             this.nodeNumber = 2;
 
-            this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));
+            var interval = new TimeSpan(0, 0, 1);
+            this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, interval, interval);
             this.clientData = new ClientEntity();
             this.clientData.IsRunning = true;
 
@@ -55,6 +56,8 @@ namespace DebugConsole
             {
                 AddNodeInternal(i);
             }
+
+            return Task.CompletedTask;
         }
 
         public async Task Stop()

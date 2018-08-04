@@ -9,7 +9,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
         protected readonly InMemoryConnectionCenter center;
         protected Queue<CommandBase> receivedData = new Queue<CommandBase>();
 
-        public InMemoryPeerBase(InMemoryConnectionCenter center)
+        protected InMemoryPeerBase(InMemoryConnectionCenter center)
         {
             this.center = center;
         }

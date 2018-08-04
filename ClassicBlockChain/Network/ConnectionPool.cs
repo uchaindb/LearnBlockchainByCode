@@ -66,8 +66,6 @@ namespace UChainDB.Example.Chain.Network
             }
         }
 
-        public int ConnectionNumber { get; set; }
-
         public void Start()
         {
             this.reconnectTimer = new Timer((_) => this.ConnectAll(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));
