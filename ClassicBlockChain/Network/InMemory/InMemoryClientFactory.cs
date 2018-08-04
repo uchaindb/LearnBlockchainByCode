@@ -1,6 +1,6 @@
 ﻿namespace UChainDB.Example.Chain.Network.InMemory
 {
-    public class InMemoryClientFactory : IApiClientFactory
+    public class InMemoryClientFactory : IPeerFactory
     {
         private readonly InMemoryClientServerCenter center;
         private readonly InMemoryListener server;

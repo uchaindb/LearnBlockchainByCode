@@ -11,28 +11,22 @@ namespace UChainDB.Example.Chain.Core
     public class Node : IDisposable
     {
         public Engine Engine { get; set; }
-        public INodeOperator NodeOperator { get; }
 
         private readonly IListener apiServer;
         private readonly NodeOptions options;
-        private readonly IApiClientFactory apiClientFactory;
-        public Guid NodeId { get; set; } = Guid.NewGuid();
+        private readonly IPeerFactory apiClientFactory;
         public ConnectionPool pool;
         public int NetworkId { get; }
 
-        public Node(IWallet miner, IListener apiServer, IApiClientFactory apiClientFactory, NodeOptions options = null)
+        public Node(IWallet miner, IListener apiServer, IPeerFactory apiClientFactory, NodeOptions options = null)
         {
             this.Engine = new Engine(miner);
             this.options = options ?? new NodeOptions();
 
-            var no = new NodeOperator();
-            //no.Init(this);
-            this.NodeOperator = no;
             this.apiServer = apiServer;
-            //this.apiServer.Start(this.NodeOperator);
             this.apiServer.Start();
             this.apiClientFactory = apiClientFactory;
-            this.pool = new ConnectionPool(this, this.options.NetworkId, this.options.WellKnownNodes, this.NodeId, this.apiClientFactory, this.apiServer);
+            this.pool = new ConnectionPool(this, this.options.NetworkId, this.options.WellKnownNodes, this.apiClientFactory, this.apiServer);
             this.pool.Start();
             this.NetworkId = options.NetworkId;
             this.Engine.OnNewBlockCreated += Engine_OnNewBlockCreated;

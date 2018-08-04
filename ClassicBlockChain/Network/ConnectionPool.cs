@@ -14,21 +14,19 @@ using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network
 {
-    public class ConnectionPool : IConnectionPool
+    public class ConnectionPool : IDisposable
     {
         internal List<ConnectionNode> nodes;
         private int magicNumber;
-        private Guid nodeId;
         private Node selfNode;
-        private IApiClientFactory apiClientFactory;
+        private IPeerFactory apiClientFactory;
         private readonly IListener listener;
         private Timer reconnectTimer;
-        private bool isSyncing = false;
         private bool isReceiving = false;
         private Thread thReceive;
         public event EventHandler<CommandBase> OnCommandReceived;
 
-        public ConnectionPool(Node node, int magicNumber, string[] wellKnowns, Guid nodeId, IApiClientFactory apiClientFactory, IListener listener)
+        public ConnectionPool(Node node, int magicNumber, string[] wellKnowns, IPeerFactory apiClientFactory, IListener listener)
         {
             this.selfNode = node;
             this.magicNumber = magicNumber;
@@ -36,7 +34,6 @@ namespace UChainDB.Example.Chain.Network
                 .Where(_ => _ != listener.Address)
                 .Select(_ => new ConnectionNode(_))
                 .ToList();
-            this.nodeId = nodeId;
             this.apiClientFactory = apiClientFactory;
             this.listener = listener;
             this.listener.OnPeerConnected += Listener_OnPeerConnected;
@@ -161,7 +158,7 @@ namespace UChainDB.Example.Chain.Network
                 await client.ConnectAsync(node.Address);
                 node.ApiClient = client;
             }
-            catch (ApiClientException)
+            catch (Exception)
             {
                 //log.LogError($"Cannot connect to server {node.Address}, due to {acex.Message}", acex);
                 node.Status = ConnectionStatus.Dead;
@@ -177,11 +174,6 @@ namespace UChainDB.Example.Chain.Network
             try
             {
                 await client.SendAsync(new VersionCommand());
-            }
-            catch (ApiClientException ex) when (ex.InnerException is WebException wex && wex.InnerException is HttpRequestException)
-            {
-                // close connection
-                node.Status = ConnectionStatus.Dead;
             }
             catch (Exception ex)
             {

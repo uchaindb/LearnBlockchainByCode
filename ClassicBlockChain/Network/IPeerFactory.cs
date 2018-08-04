@@ -2,7 +2,7 @@
 
 namespace UChainDB.Example.Chain.Network
 {
-    public interface IApiClientFactory : IDisposable
+    public interface IPeerFactory : IDisposable
     {
         IPeer Produce();
     }

@@ -10,11 +10,6 @@ namespace UChainDB.Example.Chain.Network.InMemory
 {
     public class InMemoryClientServerCenter
     {
-        //public struct PeerDirection
-        //{
-        //    public string Source { get; set; }
-        //    public string Destination { get; set; }
-        //}
         private int number = 0;
 
         private ConcurrentDictionary<string, InMemoryListener> dicServers = new ConcurrentDictionary<string, InMemoryListener>();
@@ -63,30 +58,17 @@ namespace UChainDB.Example.Chain.Network.InMemory
             return server;
         }
 
-        private IApiClientFactory ProduceApiClientFactory(InMemoryListener server)
+        private IPeerFactory ProduceApiClientFactory(InMemoryListener server)
         {
             return new InMemoryClientFactory(this, server);
         }
 
-        public (IListener listener, IApiClientFactory clientFactory) Produce()
+        public (IListener listener, IPeerFactory clientFactory) Produce()
         {
             var server = this.ProduceApiServer();
             var clientFactory = this.ProduceApiClientFactory(server);
             return (server, clientFactory);
         }
-
-        //internal async Task SendAsync(string targetAddress, Command command)
-        //{
-        //    if (this.dicPeers.TryGetValue(targetAddress, out var clients))
-        //    {
-        //        var cc = clients.ToArray();
-        //        foreach (var client in cc)
-        //        {
-        //            await client.InternalSendAsync(command);
-        //        }
-        //    }
-        //    //return Task.FromResult(this.dicServers[baseAddress].Execute(buffer));
-        //}
 
         internal async Task<bool> ConnectAsync(string baseAddress, ActiveInMemoryClient client)
         {
