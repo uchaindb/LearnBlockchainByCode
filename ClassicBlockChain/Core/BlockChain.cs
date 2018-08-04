@@ -36,7 +36,7 @@ namespace UChainDB.Example.Chain.Core
 
         public BlockChain()
         {
-            this.InitBlocks(GenesisBlockHead);
+            this.CacheBlock(GenesisBlock);
             this.Tail = GenesisBlockHead;
         }
 
@@ -55,6 +55,12 @@ namespace UChainDB.Example.Chain.Core
         internal bool ContainTx(UInt256 txHash)
             => this.TxToBlockDictionary.ContainsKey(txHash);
 
+        internal void SyncTx(Transaction tx)
+        {
+            // no check for sync as its dependences may not come at this time
+            this.TxQueue.Enqueue(tx);
+        }
+
         internal void AddTx(Transaction tx)
         {
             var (ret, error) = this.CheckQueueOfTx(tx);
@@ -72,27 +78,36 @@ namespace UChainDB.Example.Chain.Core
             blockhead = FindValidBlock(blockhead, Difficulty, ref this.cancelSearchNonce);
             if (blockhead == null) return null;
 
-            this.BlockDictionary[block.Hash] = block;
-            this.InitBlocks(blockhead);
+            CacheBlock(block);
             this.MaintainBlockChain(blockhead);
             return blockhead;
         }
 
         internal void AddSyncBlock(Block block)
         {
-            this.BlockDictionary[block.Hash] = block;
-            this.InitBlocks(block.Head);
+            CacheBlock(block);
+            // just cache block if prevous block not exist
+            if (!this.BlockHeadDictionary.ContainsKey(block.Head.PreviousBlockHash)) return;
             if (this.TryMoveSyncTail(block.Head))
             {
                 this.cancelSearchNonce = true;
             }
+        }
+
+        private void CacheBlock(Block block)
+        {
+            this.BlockDictionary[block.Hash] = block;
             this.InitBlocks(block.Head);
         }
 
         private bool TryMoveSyncTail(BlockHead newTail)
         {
-            var cnow = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, this.Tail.Hash).Count();
-            var cnew = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, newTail.Hash).Count();
+            var listnow = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, this.Tail.Hash).ToArray();
+            var listnew = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, newTail.Hash).ToArray();
+            // broken chain should not count
+            if (listnew.LastOrDefault()?.Hash != GenesisBlockHead.Hash) return false;
+            var cnow = listnow.Length;
+            var cnew = listnew.Length;
             if (cnew > cnow)
             {
                 MaintainBlockChain(newTail);
@@ -209,8 +224,11 @@ namespace UChainDB.Example.Chain.Core
             while (cursor.Hash != from)
             {
                 yield return cursor;
-                cursor = this.BlockHeadDictionary[cursor.PreviousBlockHash];
+                if (!this.BlockHeadDictionary.TryGetValue(cursor.PreviousBlockHash, out cursor))
+                    yield break;
             }
+
+            yield return cursor;
         }
 
         private void MaintainBlockChain(BlockHead newTail)

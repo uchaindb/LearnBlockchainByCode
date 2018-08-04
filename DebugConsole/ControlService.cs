@@ -18,14 +18,14 @@ namespace DebugConsole
     {
         private readonly IHubContext<ControlHub> hubcontext;
         private Timer updateTimer;
-        private List<IWallet> miners = new List<IWallet>();
-        private IWallet alice = new SimpleWallet("Alice");
-        private IWallet bob = new SimpleWallet("Bob");
+        private List<IWallet> miners;
+        private IWallet alice;
+        private IWallet bob;
         private Utxo h2utxo;
         private Transaction h3tx;
         private bool bobVerified = false;
-        private List<Node> nodes = new List<Node>();
-        private InMemoryClientServerCenter center = new InMemoryClientServerCenter();
+        private List<Node> nodes;
+        private InMemoryClientServerCenter center;
         private int nodeNumber = 2;
         private ClientEntity clientData;
 
@@ -39,6 +39,11 @@ namespace DebugConsole
             this.h2utxo = null;
             this.h3tx = null;
             this.bobVerified = false;
+            this.miners = new List<IWallet>();
+            this.alice = new SimpleWallet("Alice");
+            this.bob = new SimpleWallet("Bob");
+            this.nodes = new List<Node>();
+            this.center = new InMemoryClientServerCenter();
 
             this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));
             this.clientData = new ClientEntity();

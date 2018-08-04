@@ -17,10 +17,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
             // nothing to process as it already exists
             if (bc.BlockHeadDictionary.ContainsKey(this.Block.Hash)) return;
 
-            if (bc.BlockHeadDictionary.ContainsKey(this.Block.Head.PreviousBlockHash))
-            {
-                bc.AddSyncBlock(this.Block);
-            }
+            bc.AddSyncBlock(this.Block);
         }
     }
 }

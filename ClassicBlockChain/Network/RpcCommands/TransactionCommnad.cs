@@ -14,7 +14,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
             var engine = node.Engine;
             var bc = engine.BlockChain;
 
-            bc.AddTx(Transaction);
+            bc.SyncTx(Transaction);
         }
     }
 }
