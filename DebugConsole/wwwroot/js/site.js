@@ -34,6 +34,9 @@
             stop: function () {
                 connection.invoke("Stop").catch(err => console.error(err.toString()));
             },
+            addNode: function () {
+                connection.invoke("AddNode").catch(err => console.error(err.toString()));
+            },
         },
     });
 

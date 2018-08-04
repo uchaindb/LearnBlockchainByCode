@@ -46,15 +46,7 @@ namespace DebugConsole
 
             for (int i = 0; i < nodeNumber; i++)
             {
-                var number = i;
-                this.clientData.Nodes.Add(new NodeEntity { Name = number.ToString(), });
-                var (listener, clientFactory) = center.Produce();
-                var miner = new DeterministicWallet($"{number}(Miner)");
-                miners.Add(miner);
-                var node = new Node(miner, listener, clientFactory, center.NodeOptions);
-                nodes.Add(node);
-                Append(new BlockCreatedStatusEntity(BlockChain.GenesisBlock, "Genesis Block"), number);
-                AssignEvent(node, number);
+                AddNodeInternal(i);
             }
         }
 
@@ -69,6 +61,25 @@ namespace DebugConsole
                 var node = nodes[i];
                 node.Dispose();
             }
+        }
+
+        public Task AddNode()
+        {
+            this.AddNodeInternal(this.nodeNumber);
+            this.nodeNumber++;
+            return Task.CompletedTask;
+        }
+
+        private void AddNodeInternal(int number)
+        {
+            this.clientData.Nodes.Add(new NodeEntity { Name = number.ToString(), });
+            var (listener, clientFactory) = center.Produce();
+            var miner = new DeterministicWallet($"{number}(Miner)");
+            miners.Add(miner);
+            var node = new Node(miner, listener, clientFactory, center.NodeOptions);
+            nodes.Add(node);
+            Append(new BlockCreatedStatusEntity(BlockChain.GenesisBlock, "Genesis Block"), number);
+            AssignEvent(node, number);
         }
 
         private async Task UpdateBlock()

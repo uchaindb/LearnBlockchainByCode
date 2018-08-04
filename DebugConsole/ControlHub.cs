@@ -23,5 +23,10 @@ namespace DebugConsole
         {
             await this.controlService.Stop();
         }
+
+        public async Task AddNode()
+        {
+            await this.controlService.AddNode();
+        }
     }
 }
