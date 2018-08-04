@@ -12,58 +12,29 @@ namespace UChainDB.Example.Chain.Core
     {
         public Engine Engine { get; set; }
 
-        private readonly IListener apiServer;
+        private readonly IListener listener;
         private readonly NodeOptions options;
-        private readonly IPeerFactory apiClientFactory;
-        public ConnectionPool pool;
-        public int NetworkId { get; }
+        private readonly IPeerFactory peerFactory;
+        public ConnectionPool ConnPool { get; }
 
-        public Node(IWallet miner, IListener apiServer, IPeerFactory apiClientFactory, NodeOptions options = null)
+        public Node(IWallet miner, IListener listener, IPeerFactory peerFactory, NodeOptions options = null)
         {
             this.Engine = new Engine(miner);
             this.options = options ?? new NodeOptions();
 
-            this.apiServer = apiServer;
-            this.apiServer.Start();
-            this.apiClientFactory = apiClientFactory;
-            this.pool = new ConnectionPool(this, this.options.NetworkId, this.options.WellKnownNodes, this.apiClientFactory, this.apiServer);
-            this.pool.Start();
-            this.NetworkId = options.NetworkId;
-            this.Engine.OnNewBlockCreated += Engine_OnNewBlockCreated;
-            this.Engine.OnNewTxCreated += Engine_OnNewTxCreated;
-        }
-
-        private void Engine_OnNewTxCreated(object sender, Transaction e)
-        {
-            this.pool.Broadcast(new TransactionCommnad { Transaction = e });
-        }
-
-        private void Engine_OnNewBlockCreated(object sender, BlockHead e)
-        {
-            var blk = this.Engine.BlockChain.GetBlock(e.Hash);
-            this.pool.Broadcast(new BlockCommnad { Block = blk });
+            this.listener = listener;
+            this.listener.Start();
+            this.peerFactory = peerFactory;
+            this.ConnPool = new ConnectionPool(this, this.options.WellKnownNodes, this.peerFactory, this.listener);
+            this.ConnPool.Start();
         }
 
         public void Dispose()
         {
             this.Engine?.Dispose();
-            this.apiServer.Dispose();
-            this.pool.Dispose();
-            this.apiClientFactory.Dispose();
+            this.listener.Dispose();
+            this.ConnPool.Dispose();
+            this.peerFactory.Dispose();
         }
-    }
-
-    public class NodeOptions
-    {
-        public int IntervalInMilliseconds { get; set; } = 1000;
-        public int NetworkId { get; set; } = 32423;
-        public string[] WellKnownNodes { get; set; } = new[] {
-            "localhost:3030",
-            "localhost:3031",
-            "localhost:3032",
-            "localhost:3033",
-            "localhost:3034",
-            "localhost:3035",
-        };
     }
 }

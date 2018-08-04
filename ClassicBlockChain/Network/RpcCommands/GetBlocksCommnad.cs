@@ -31,7 +31,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                 .ToArray();
 
             var responseCmd = new InventoryCommnad { Items = items };
-            connectionNode.ApiClient.Send(responseCmd);
+            connectionNode.Peer.Send(responseCmd);
         }
     }
 }

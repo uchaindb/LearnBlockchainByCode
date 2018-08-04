@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using UChainDB.Example.Chain.Core;
+using UChainDB.Example.Chain.Entity;
 
 namespace UChainDB.Example.Chain.Network.InMemory
 {
@@ -16,15 +16,15 @@ namespace UChainDB.Example.Chain.Network.InMemory
         {
         }
 
-        public NodeOptions NodeOptions { get => new NodeOptions { WellKnownNodes = this.ProduceWellKnownNodes(), IntervalInMilliseconds = 300 }; }
+        public NodeOptions NodeOptions { get => new NodeOptions { WellKnownNodes = this.ProduceWellKnownNodes() }; }
 
         public string[] ProduceWellKnownNodes() => Enumerable.Range(0, this.number).Select(_ => _.ToString()).ToArray();
 
         public (IListener listener, IPeerFactory clientFactory) Produce()
         {
-            var server = this.ProduceApiServer();
-            var clientFactory = this.ProduceApiClientFactory(server);
-            return (server, clientFactory);
+            var listener = this.ProduceListener();
+            var peerFactory = this.ProducePeerFactory(listener);
+            return (listener, peerFactory);
         }
 
         internal void AddPeer(InMemoryClientBase client)
@@ -58,7 +58,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
             return this.dicServers[baseAddress].Connect(client);
         }
 
-        private InMemoryListener ProduceApiServer()
+        private InMemoryListener ProduceListener()
         {
             var address = this.number.ToString();
             var server = new InMemoryListener(this, address);
@@ -67,7 +67,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
             return server;
         }
 
-        private IPeerFactory ProduceApiClientFactory(InMemoryListener server)
+        private IPeerFactory ProducePeerFactory(InMemoryListener server)
         {
             return new InMemoryClientFactory(this, server);
         }

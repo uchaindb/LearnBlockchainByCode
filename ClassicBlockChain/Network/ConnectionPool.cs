@@ -16,38 +16,52 @@ namespace UChainDB.Example.Chain.Network
 {
     public class ConnectionPool : IDisposable
     {
-        internal List<ConnectionNode> nodes;
-        private int magicNumber;
-        private Node selfNode;
-        private IPeerFactory apiClientFactory;
+        private readonly List<ConnectionNode> nodes;
+        private readonly Node selfNode;
+        private readonly IPeerFactory peerFactory;
         private readonly IListener listener;
         private Timer reconnectTimer;
         private bool isReceiving = false;
         private Thread thReceive;
         public event EventHandler<CommandBase> OnCommandReceived;
 
-        public ConnectionPool(Node node, int magicNumber, string[] wellKnowns, IPeerFactory apiClientFactory, IListener listener)
+        public ConnectionPool(Node node, string[] wellKnowns, IPeerFactory peerFactory, IListener listener)
         {
             this.selfNode = node;
-            this.magicNumber = magicNumber;
             this.nodes = wellKnowns
                 .Where(_ => _ != listener.Address)
                 .Select(_ => new ConnectionNode(_))
                 .ToList();
-            this.apiClientFactory = apiClientFactory;
+            this.peerFactory = peerFactory;
             this.listener = listener;
             this.listener.OnPeerConnected += Listener_OnPeerConnected;
+            this.selfNode.Engine.OnNewBlockCreated += Engine_OnNewBlockCreated;
+            this.selfNode.Engine.OnNewTxCreated += Engine_OnNewTxCreated;
+        }
+
+        private void Engine_OnNewTxCreated(object sender, Transaction e)
+        {
+            this.Broadcast(new TransactionCommnad { Transaction = e });
+        }
+
+        private void Engine_OnNewBlockCreated(object sender, BlockHead e)
+        {
+            var blk = this.selfNode.Engine.BlockChain.GetBlock(e.Hash);
+            this.Broadcast(new BlockCommnad { Block = blk });
         }
 
         private void Listener_OnPeerConnected(object sender, IPeer e)
         {
             lock (this.nodes)
             {
-                var prev = this.nodes.FirstOrDefault(_ => _.ApiClient.TargetAddress == e.TargetAddress && _.ApiClient.BaseAddress == e.BaseAddress);
+                var prev = this.nodes
+                    .FirstOrDefault(_ => 
+                        _.Peer.TargetAddress == e.TargetAddress 
+                        && _.Peer.BaseAddress == e.BaseAddress);
                 if (prev != null) this.nodes.Remove(prev);
-                this.nodes.Add(new ConnectionNode("TODO")
+                this.nodes.Add(new ConnectionNode()
                 {
-                    ApiClient = e,
+                    Peer = e,
                 });
             }
         }
@@ -75,8 +89,8 @@ namespace UChainDB.Example.Chain.Network
                     }
                     foreach (var node in internalnodes)
                     {
-                        if (node.ApiClient == null) continue;
-                        var command = node.ApiClient.Receive();
+                        if (node.Peer == null) continue;
+                        var command = node.Peer.Receive();
                         if (command == null) continue;
                         OnCommandReceived?.Invoke(this, command);
                         command.OnReceived(this.selfNode, node);
@@ -99,7 +113,7 @@ namespace UChainDB.Example.Chain.Network
             {
                 internalnodes = this.nodes
                     .Where(_ => _.Status == ConnectionStatus.Initial || _.Status == ConnectionStatus.Dead)
-                    .Where(_ => _.Address != "TODO")
+                    .Where(_ => _.Address != null)
                     .ToArray();
             }
             foreach (var node in internalnodes)
@@ -119,7 +133,7 @@ namespace UChainDB.Example.Chain.Network
             }
             foreach (var node in internalnodes)
             {
-                node.ApiClient.Send(command);
+                node.Peer.Send(command);
             }
         }
 
@@ -136,8 +150,8 @@ namespace UChainDB.Example.Chain.Network
             }
             foreach (var node in internalnodes)
             {
-                node.ApiClient.Close();
-                node.ApiClient?.Dispose();
+                node.Peer.Close();
+                node.Peer?.Dispose();
             }
             this.thReceive.Join();
         }
@@ -145,77 +159,48 @@ namespace UChainDB.Example.Chain.Network
         private void TryConnect(ConnectionNode node)
         {
             // dispose previous client if exist
-            if (node.ApiClient != null)
+            if (node.Peer != null)
             {
-                node.ApiClient.Dispose();
-                node.ApiClient = null;
+                node.Peer.Dispose();
+                node.Peer = null;
             }
 
-            var client = this.apiClientFactory.Produce();
+            var peer = this.peerFactory.Produce();
             try
             {
-                client.Connect(node.Address);
-                node.ApiClient = client;
+                peer.Connect(node.Address);
+                node.Peer = peer;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //log.LogError($"Cannot connect to server {node.Address}, due to {acex.Message}", acex);
+                Debug.WriteLine($"Cannot connect to server {node.Address}, due to {ex.Message}");
                 node.Status = ConnectionStatus.Dead;
             }
 
-            if (!client.IsConnected)
+            if (!peer.IsConnected)
             {
-                //log.LogWarning("open api client channel failed");
+                Debug.WriteLine("open peer channel failed");
                 node.Status = ConnectionStatus.Dead;
                 return;
             }
 
             try
             {
-                client.Send(new VersionCommand());
+                peer.Send(new VersionCommand());
             }
             catch (Exception ex)
             {
-                //this.log.LogError($"something error trying connect to {node.Address}", ex);
+                Debug.WriteLine($"something error trying connect to {node.Address}, ex:{ex}");
                 node.Status = ConnectionStatus.Dead;
             }
             finally
             {
                 if (node.Status != ConnectionStatus.Connected)
                 {
-                    client.Close();
-                    client.Dispose();
+                    peer.Close();
+                    peer.Dispose();
                 }
             }
         }
-    }
-
-    public enum ConnectionStatus
-    {
-        Initial,
-        Self,
-        DifferentNetwork,
-        Connected,
-        Disconnected,
-        Dead,
-    }
-
-    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
-    public class ConnectionNode
-    {
-        public ConnectionNode(string address)
-        {
-            this.Address = address;
-        }
-
-        public string Address { get; set; }
-        public ConnectionStatus Status { get; set; } = ConnectionStatus.Initial;
-        public Guid NodeId { get; set; } = Guid.Empty;
-        public IPeer ApiClient { get; set; }
-        public BlockHead LatestBlock { get; set; }
-        public ulong Height { get; set; }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected virtual string DebuggerDisplay => $"{this.ApiClient?.BaseAddress} -> {this.ApiClient?.TargetAddress}";
     }
 }

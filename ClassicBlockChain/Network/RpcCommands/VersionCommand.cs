@@ -9,7 +9,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
         public override void OnReceived(Node node, ConnectionNode connectionNode)
         {
             connectionNode.Status = ConnectionStatus.Connected;
-            connectionNode.ApiClient.Send(new VersionAcknowledgeCommnad());
+            connectionNode.Peer.Send(new VersionAcknowledgeCommnad());
         }
     }
 }
