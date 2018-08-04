@@ -120,7 +120,7 @@ namespace DebugConsole
                 // take action only on first node
                 if (number == 0)
                 {
-                    if (height == 2)
+                    if (h2utxo == null)
                     {
                         var utxos = me.GetUtxos(engine);
                         var utxo = utxos.First();

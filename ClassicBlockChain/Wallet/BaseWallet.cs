@@ -84,13 +84,14 @@ namespace UChainDB.Example.Chain.Wallet
 
         public void SyncBlockHead(Engine engine)
         {
-            var blocks = engine.BlockChain.BlockHeadDictionary.ToDictionary(_ => _.Key, _ => _.Value);
+            var bc = engine.BlockChain;
+            var blocks = bc.GetBlockHeaders(bc.Tail.Hash).ToDictionary(_ => _.Hash, _ => _);
             var newBlockHash = blocks.Select(_ => _.Key).ToArray();
             var oldBlockHash = this.blockHeads.Select(_ => _.Key).ToArray();
             var excepts = oldBlockHash.Except(newBlockHash).ToArray();
             if (excepts.Length > 0)
             {
-                Console.WriteLine($"found [{excepts.Length}] difference in sync block");
+                Debug.WriteLine($"found [{excepts.Length}] difference in sync block");
                 return;
             }
             this.blockHeads = blocks;
