@@ -1,11 +1,11 @@
-﻿namespace DebugConsole.Models
+﻿namespace UChainDB.Example.Chain.DebugConsole.Models
 {
     public class CommandReceivedStatusEntity : PlainStatusEntity
     {
         public CommandReceivedStatusEntity(string command, string text = null)
             : base(text)
         {
-            Command = command;
+            this.Command = command;
         }
 
         public override StatusType Type => StatusType.CommandReceived;

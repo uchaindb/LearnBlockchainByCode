@@ -1,10 +1,10 @@
-﻿namespace DebugConsole.Models
+﻿namespace UChainDB.Example.Chain.DebugConsole.Models
 {
     public class PlainStatusEntity : StatusEntity
     {
         public PlainStatusEntity(string text)
         {
-            Text = text;
+            this.Text = text;
         }
 
         public override StatusType Type => StatusType.Plain;

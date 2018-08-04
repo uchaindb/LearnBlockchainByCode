@@ -1,11 +1,11 @@
-﻿namespace UChainDB.BingChain.Contracts.Json
-{
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-    using System;
-    using System.Linq;
-    using UChainDB.Example.Chain.Entity;
+﻿using System;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using UChainDB.Example.Chain.Entity;
 
+namespace UChainDB.Example.Chain.DebugConsole.Models
+{
     public class UInt256Converter : JsonConverter
     {
         public override bool CanConvert(Type objectType)

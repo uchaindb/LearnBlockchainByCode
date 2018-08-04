@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using DebugConsole;
+using Microsoft.AspNetCore.SignalR;
 
-namespace DebugConsole
+namespace UChainDB.Example.Chain.DebugConsole.Hubs
 {
     public class ControlHub : Hub
     {

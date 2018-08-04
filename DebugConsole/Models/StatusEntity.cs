@@ -1,4 +1,4 @@
-﻿namespace DebugConsole.Models
+﻿namespace UChainDB.Example.Chain.DebugConsole.Models
 {
     public enum StatusType
     {

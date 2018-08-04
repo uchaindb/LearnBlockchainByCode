@@ -1,13 +1,13 @@
 ﻿using UChainDB.Example.Chain.Entity;
 
-namespace DebugConsole.Models
+namespace UChainDB.Example.Chain.DebugConsole.Models
 {
     public class BlockCreatedStatusEntity : PlainStatusEntity
     {
         public BlockCreatedStatusEntity(Block block, string text)
             : base(text)
         {
-            Block = block;
+            this.Block = block;
         }
 
         public override StatusType Type => StatusType.BlockCreated;

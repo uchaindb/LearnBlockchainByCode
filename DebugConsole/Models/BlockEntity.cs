@@ -1,6 +1,6 @@
 ﻿using UChainDB.Example.Chain.Entity;
 
-namespace DebugConsole.Models
+namespace UChainDB.Example.Chain.DebugConsole.Models
 {
     public class BlockEntity
     {

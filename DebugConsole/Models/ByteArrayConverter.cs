@@ -1,9 +1,9 @@
-﻿namespace UChainDB.BingChain.Contracts.Json
-{
-    using Newtonsoft.Json;
-    using System;
-    using UChainDB.Example.Chain.Entity;
+﻿using System;
+using Newtonsoft.Json;
+using UChainDB.Example.Chain.Entity;
 
+namespace UChainDB.Example.Chain.DebugConsole.Models
+{
     public class ByteArrayConverter<T> : JsonConverter where T : ByteArrayDef, new()
     {
         public override bool CanConvert(Type objectType)

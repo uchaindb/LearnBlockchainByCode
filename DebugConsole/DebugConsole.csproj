@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
+    <RootNamespace>UChainDB.Example.Chain.DebugConsole</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DebugConsole;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using UChainDB.BingChain.Contracts.Json;
+using UChainDB.Example.Chain.DebugConsole.Hubs;
+using UChainDB.Example.Chain.DebugConsole.Models;
 using UChainDB.Example.Chain.Entity;
 
-namespace DebugConsole
+namespace UChainDB.Example.Chain.DebugConsole
 {
     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }

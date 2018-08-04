@@ -1,11 +1,12 @@
-﻿using DebugConsole.Models;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UChainDB.Example.Chain.Core;
+using UChainDB.Example.Chain.DebugConsole.Hubs;
+using UChainDB.Example.Chain.DebugConsole.Models;
 using UChainDB.Example.Chain.Entity;
 using UChainDB.Example.Chain.Network.InMemory;
 using UChainDB.Example.Chain.Network.RpcCommands;
