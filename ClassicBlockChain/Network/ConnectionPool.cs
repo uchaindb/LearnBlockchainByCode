@@ -26,7 +26,7 @@ namespace UChainDB.Example.Chain.Network
         private bool isSyncing = false;
         private bool isReceiving = false;
         private Thread thReceive;
-        public event EventHandler<Command> OnCommandReceived;
+        public event EventHandler<CommandBase> OnCommandReceived;
 
         public ConnectionPool(Node node, int magicNumber, string[] wellKnowns, Guid nodeId, IApiClientFactory apiClientFactory, IListener listener)
         {
@@ -111,7 +111,7 @@ namespace UChainDB.Example.Chain.Network
             }
         }
 
-        public async Task BroadcastAsync(Command command)
+        public async Task BroadcastAsync(CommandBase command)
         {
             ConnectionNode[] internalnodes;
             lock (this.nodes)

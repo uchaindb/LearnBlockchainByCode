@@ -115,7 +115,7 @@ namespace UChainDB.Example.Chain
                 }
             };
 
-            node.pool.OnCommandReceived += (object sender, Network.RpcCommands.Command e) =>
+            node.pool.OnCommandReceived += (object sender, Network.RpcCommands.CommandBase e) =>
             {
                 ConsoleHelper.WriteLine($"Command[{e.CommandType}] received", number);
             };

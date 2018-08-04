@@ -14,7 +14,7 @@ namespace UChainDB.Example.Chain.Network.InMemory
         public string TargetAddress { get; protected set; }
         public string BaseAddress { get; protected set; }
 
-        protected Queue<Command> receivedData = new Queue<Command>();
+        protected Queue<CommandBase> receivedData = new Queue<CommandBase>();
 
         public InMemoryClientBase(InMemoryClientServerCenter center)
         {
@@ -38,22 +38,22 @@ namespace UChainDB.Example.Chain.Network.InMemory
         {
         }
 
-        public virtual Task<Command> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<CommandBase> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (this.receivedData.TryDequeue(out var ret))
             {
                 return Task.FromResult(ret);
             }
-            return Task.FromResult<Command>(null);
+            return Task.FromResult<CommandBase>(null);
         }
 
-        public virtual async Task SendAsync(Command command, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task SendAsync(CommandBase command, CancellationToken cancellationToken = default(CancellationToken))
         {
             //await this.center.SendAsync(this.TargetAddress, command);
             this.opposite.receivedData.Enqueue(command);
         }
 
-        internal Task InternalSendAsync(Command command)
+        internal Task InternalSendAsync(CommandBase command)
         {
             //this.opposite.receivedData.Enqueue(command);
             this.receivedData.Enqueue(command);

@@ -4,7 +4,7 @@ using UChainDB.Example.Chain.Core;
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ", nq}")]
-    public abstract class Command
+    public abstract class CommandBase
     {
         public abstract string CommandType { get; }
 

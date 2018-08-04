@@ -13,9 +13,9 @@ namespace UChainDB.Example.Chain.Network
         string TargetAddress { get; }
         string BaseAddress { get; }
 
-        Task SendAsync(Command command, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendAsync(CommandBase command, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<Command> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<CommandBase> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         Task ConnectAsync(string connectionString, CancellationToken cancellationToken = default(CancellationToken));
 

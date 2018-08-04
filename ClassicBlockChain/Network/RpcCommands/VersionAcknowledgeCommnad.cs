@@ -2,7 +2,7 @@
 
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
-    public class VersionAcknowledgeCommnad : Command
+    public class VersionAcknowledgeCommnad : CommandBase
     {
         public override string CommandType => Commands.VersionAcknowledge;
 
