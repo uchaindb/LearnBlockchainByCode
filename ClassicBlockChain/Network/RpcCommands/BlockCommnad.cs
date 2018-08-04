@@ -18,6 +18,17 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
             if (bc.BlockHeadDictionary.ContainsKey(this.Block.Hash)) return;
 
             bc.AddSyncBlock(this.Block);
+
+            // initialize sync process if broken chain block received
+            if (bc.BlockHeadDictionary.ContainsKey(this.Block.Head.PreviousBlockHash))
+            {
+                var getblkcmd = new GetBlocksCommnad
+                {
+                    BlockLocators = engine.BlockChain.GetBlockLocatorHashes(),
+                    LastBlockHash = bc.Tail.Hash,
+                };
+                connectionNode.ApiClient.SendAsync(getblkcmd);
+            }
         }
     }
 }

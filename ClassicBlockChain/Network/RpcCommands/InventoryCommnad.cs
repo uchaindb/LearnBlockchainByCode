@@ -10,6 +10,11 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
 
         public override void OnReceived(Node node, ConnectionNode connectionNode)
         {
+            var engine = node.Engine;
+            var bc = engine.BlockChain;
+
+            var responseCmd = new GetDataCommnad { Items = this.Items };
+            connectionNode.ApiClient.SendAsync(responseCmd);
         }
     }
 }

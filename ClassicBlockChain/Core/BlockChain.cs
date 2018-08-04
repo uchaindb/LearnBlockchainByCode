@@ -223,6 +223,8 @@ namespace UChainDB.Example.Chain.Core
             var cursor = this.BlockHeadDictionary[to];
             while (cursor.Hash != from)
             {
+                // broken chain
+                if (cursor.PreviousBlockHash == null) yield break;
                 yield return cursor;
                 if (!this.BlockHeadDictionary.TryGetValue(cursor.PreviousBlockHash, out cursor))
                     yield break;
@@ -264,8 +266,17 @@ namespace UChainDB.Example.Chain.Core
             }
         }
 
+        public UInt256[] GetBlockLocatorHashes()
+        {
+            var indexes = GetBlockLocatorIndexes(this.Height);
+            return this.GetBlockHeaders(this.Tail.Hash)
+                .Where((hd, i) => indexes.Contains(i))
+                .Select(_ => _.Hash)
+                .ToArray();
+        }
+
         // ref https://en.bitcoin.it/wiki/Protocol_documentation#getblocks
-        private static long[] GetBlockLocatorHashes(long height)
+        private static long[] GetBlockLocatorIndexes(long height)
         {
             var indexes = new List<long>();
             var step = 1;
