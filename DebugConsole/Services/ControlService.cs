@@ -37,20 +37,10 @@ namespace DebugConsole
 
         public Task Start()
         {
-            this.h2utxo = null;
-            this.h3tx = null;
-            this.bobVerified = false;
-            this.miners = new List<IWallet>();
-            this.alice = new SimpleWallet("Alice");
-            this.bob = new SimpleWallet("Bob");
-            this.nodes = new List<Node>();
-            this.center = new InMemoryConnectionCenter();
-            this.nodeNumber = 2;
+            InitTestData();
 
             var interval = new TimeSpan(0, 0, 1);
             this.updateTimer = new Timer(async (_) => await this.UpdateBlock(), null, interval, interval);
-            this.clientData = new ClientEntity();
-            this.clientData.IsRunning = true;
 
             for (int i = 0; i < nodeNumber; i++)
             {
@@ -68,8 +58,7 @@ namespace DebugConsole
 
             for (int i = 0; i < nodeNumber; i++)
             {
-                var node = nodes[i];
-                node.Dispose();
+                nodes[i].Dispose();
             }
         }
 
@@ -78,6 +67,20 @@ namespace DebugConsole
             this.AddNodeInternal(this.nodeNumber);
             this.nodeNumber++;
             return Task.CompletedTask;
+        }
+
+        private void InitTestData()
+        {
+            this.h2utxo = null;
+            this.h3tx = null;
+            this.bobVerified = false;
+            this.miners = new List<IWallet>();
+            this.alice = new SimpleWallet("Alice");
+            this.bob = new SimpleWallet("Bob");
+            this.nodes = new List<Node>();
+            this.center = new InMemoryConnectionCenter();
+            this.nodeNumber = 2;
+            this.clientData = new ClientEntity { IsRunning = true };
         }
 
         private void AddNodeInternal(int number)
@@ -96,9 +99,9 @@ namespace DebugConsole
         {
             for (int i = 0; i < nodeNumber; i++)
             {
-                var node = nodes[i];
+                var blockchain = nodes[i].Engine.BlockChain;
                 var number = i;
-                var blocks = node.Engine.BlockChain.GetBlocks(BlockChain.GenesisBlockHead.Hash)
+                var blocks = blockchain.GetBlocks(BlockChain.GenesisBlockHead.Hash)
                     .Select((_, h) => new BlockEntity { Height = h + 1, Block = _ })
                     .ToList();
                 this.clientData.Nodes[i].Blocks = blocks;
