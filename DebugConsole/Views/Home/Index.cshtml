@@ -2,24 +2,41 @@
     <div class="container navbar-fixed-top">
         <div class="help-block"></div>
         <div class="panel panel-default">
-            <div class="panel-heading">Control</div>
+            <div class="panel-heading">
+                <div class="btn-group pull-right" role="group">
+                    <button type="button" class="btn btn-default btn-xs"
+                            onclick="this.blur()"
+                            v-for="lan in languages"
+                            v-on:click="changeLanguage(lan.name)"
+                            v-bind:class="{ active: lan.name ==  language}">
+                        {{lan.display}}
+                    </button>
+                </div>
+                {{ $t("ui.controlPanel.Heading")}}
+            </div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <span class="">Control</span>
+                                <span class="">{{ $t("ui.controlPanel.control.LeadingText")}}</span>
                                 &nbsp;
-                                <button v-if="!isRunning" class="btn btn-primary" id="start" v-on:click="start"><span class="glyphicon glyphicon-play"></span> Start</button>
-                                <button v-if="isRunning" class="btn btn-danger" id="stop" v-on:click="stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
-                                <button v-if="isRunning" class="btn btn-warning" id="addNode" v-on:click="addNode"><span class="glyphicon glyphicon-plus"></span> Add Node</button>
+                                <button v-if="!isRunning" class="btn btn-primary" id="start" v-on:click="start">
+                                    <span class="glyphicon glyphicon-play"></span> {{ $t("ui.controlPanel.control.StartButtonText")}}
+                                </button>
+                                <button v-if="isRunning" class="btn btn-danger" id="stop" v-on:click="stop">
+                                    <span class="glyphicon glyphicon-stop"></span> {{ $t("ui.controlPanel.control.StopButtonText")}}
+                                </button>
+                                <button v-if="isRunning" class="btn btn-warning" id="addNode" v-on:click="addNode">
+                                    <span class="glyphicon glyphicon-plus"></span> {{ $t("ui.controlPanel.control.AddNodeButtonText")}}
+                                </button>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <span class="">Navigate to</span>
+                                <span class="">{{ $t("ui.controlPanel.navigation.LeadingText")}}</span>
                                 &nbsp;
                                 <div class="btn-group" role="group">
                                     <a v-bind:href="'#' + node.name + (index==nodes.length - 1 ? 'end' : '')" class="btn btn-success node-anchor" v-for="(node,index) in nodes">{{node.name}}</a>
@@ -37,27 +54,27 @@
                 <a v-bind:name="node.name"></a>
                 <div class="panel panel-success">
                     <div class="panel-heading">
-                        Node
+                        {{ $t("ui.node.TitleLeadingText")}}
                         <span class="badge">{{node.name}}</span>
                     </div>
                     <div class="panel-body">
                         <div class="panel panel-default">
-                            <div class="panel-heading">Status</div>
+                            <div class="panel-heading">{{ $t("ui.node.status.Title")}}</div>
                             <ul class="list-group status-box">
                                 <li v-for="status in node.status" class="list-group-item status-item">
                                     <div v-if="status.type == 0">
-                                        <span class="label label-info">Output</span>
-                                        {{status.text}}
+                                        <span class="label label-info">{{ $t("ui.node.status.OutputLabelText")}}</span>
+                                        <span class="text-muted"><small>{{status.text}}</small></span>
                                     </div>
                                     <div v-if="status.type == 1">
-                                        <span class="label label-info">Command</span>
-                                        <span class="label label-primary">{{status.command}}</span> received
+                                        <span class="label label-info">{{ $t("ui.node.status.CommandLabelText")}}</span>
+                                        <span class="label label-primary">{{status.command}}</span>
+                                        <span class="text-muted"><small>{{ $t("ui.node.status.CommandSuffixText")}}</small></span>
                                         <span v-if="status.text">: {{status.text}}</span>
-
                                     </div>
                                     <div v-if="status.type == 2">
-                                        <span class="label label-info">Block</span>
-                                        {{status.text}}
+                                        <span class="label label-info">{{ $t("ui.node.status.BlockLabelText")}}</span>
+                                        <span class="text-muted"><small>{{status.text}}</small></span>
                                         <blockquote>
                                             <block v-bind:block="status.block"></block>
                                         </blockquote>
@@ -92,24 +109,24 @@
 </div>
 <script type="text/x-template" id="block-template">
     <div>
-        <span class="glyphicon glyphicon-lock">{{block.hash | short}}</span>
-        <span class="glyphicon glyphicon-edit">{{block.head.nonce}}</span>
-        <span class="glyphicon glyphicon-map-marker">{{block.head.merkleRoot | short}}</span>
+        <span class="glyphicon glyphicon-lock" data-toggle="tooltip" v-bind:title="$t('ui.block.HashText')">{{block.hash | short}}</span>
+        <span class="glyphicon glyphicon-paperclip" data-toggle="tooltip" v-bind:title="$t('ui.block.NonceText')">{{block.head.nonce}}</span>
+        <span class="glyphicon glyphicon-map-marker" data-toggle="tooltip" v-bind:title="$t('ui.block.MerkleRootText')">{{block.head.merkleRoot | short}}</span>
         <ul>
             <li v-for="tx in block.txs">
-                <span class="glyphicon glyphicon-transfer">{{tx.hash | short}}</span>
-                <span v-if="tx.inputTxs && tx.inputTxs.length > 0">
+                <span class="glyphicon glyphicon-transfer" data-toggle="tooltip" v-bind:title="$t('ui.block.TxHashText')">{{tx.hash | short}}</span>
+                <span v-if="tx.inputTxs && tx.inputTxs.length > 0" data-toggle="tooltip" v-bind:title="$t('ui.block.InputText')">
                     <span v-for="tx in tx.inputTxs">
                         <span class="label label-danger">
                             {{tx.prevTxHash | short}}[{{tx.prevTxIndex}}]: {{tx.signature | short}}
                         </span>
                     </span>
                 </span>
-                <span v-else>
-                    <kbd>CoinBase</kbd>
+                <span v-else data-toggle="tooltip" v-bind:title="$t('ui.block.OutputText')">
+                    <kbd>{{ $t("ui.block.CoinBaseText")}}</kbd>
                 </span>
                 <span class="glyphicon glyphicon-arrow-right"></span>
-                <span v-for="output in tx.outputs">
+                <span v-for="output in tx.outputs" data-toggle="tooltip" v-bind:title="$t('ui.block.OutputText')">
                     <span class="label label-success">
                         {{output.value}}: {{output.publicKey | short}}
                     </span>

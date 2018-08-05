@@ -24,9 +24,17 @@
         props: ['block'],
     });
 
+    const i18n = new VueI18n({ locale: 'zh', messages: i18ninfo, });
+
+    var appdata = Object.assign({}, testdata, {
+        languages: [{ display: '中', name: 'zh' }, { display: 'en', name: 'en' },],
+        language: 'zh',
+    });
+
     var app = new Vue({
+        i18n: i18n,
         el: '#app',
-        data: testdata,
+        data: appdata,
         methods: {
             start: function () {
                 connection.invoke("Start").catch(err => console.error(err.toString()));
@@ -37,10 +45,12 @@
             addNode: function () {
                 connection.invoke("AddNode").catch(err => console.error(err.toString()));
             },
+            changeLanguage: function (language) {
+                i18n.locale = language;
+                app.language = language;
+            },
         },
     });
-
-    setTimeout(() => { app.data = {} }, 1000);
 
     connection.on("Update", (data) => {
         console.log("received", data);
@@ -53,5 +63,9 @@
         $('a[href="' + hash + '"].node-anchor').addClass('active');
         console.log("hash", hash);
     });
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
 });
 
