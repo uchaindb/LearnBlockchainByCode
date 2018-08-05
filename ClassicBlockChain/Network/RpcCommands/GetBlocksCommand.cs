@@ -4,7 +4,7 @@ using UChainDB.Example.Chain.Entity;
 
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
-    public class GetBlocksCommnad : BlockLocatorCommnadBase
+    public class GetBlocksCommand : BlockLocatorCommandBase
     {
         private const int MaxBlockRetrivalNumber = 100;
         public override string CommandType => Commands.GetBlocks;
@@ -30,7 +30,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                 .Select(_ => new InventoryEntity(InventoryType.Block, _.Hash))
                 .ToArray();
 
-            var responseCmd = new InventoryCommnad { Items = items };
+            var responseCmd = new InventoryCommand { Items = items };
             connectionNode.Peer.Send(responseCmd);
         }
     }

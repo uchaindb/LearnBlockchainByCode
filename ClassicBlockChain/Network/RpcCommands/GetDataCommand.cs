@@ -2,7 +2,7 @@
 
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
-    public class GetDataCommnad : CommandBase
+    public class GetDataCommand : CommandBase
     {
         public override string CommandType => Commands.GetData;
 
@@ -20,7 +20,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                         var tx = bc.GetTx(item.Hash);
                         if (tx != null)
                         {
-                            var responseCmd = new TransactionCommnad { Transaction = tx };
+                            var responseCmd = new TransactionCommand { Transaction = tx };
                             connectionNode.Peer.Send(responseCmd);
                         }
                         break;
@@ -28,7 +28,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
                         var blk = bc.GetBlock(item.Hash);
                         if (blk != null)
                         {
-                            var responseCmd = new BlockCommnad { Block = blk };
+                            var responseCmd = new BlockCommand { Block = blk };
                             connectionNode.Peer.Send(responseCmd);
                         }
                         break;

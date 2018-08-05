@@ -3,7 +3,7 @@ using UChainDB.Example.Chain.Entity;
 
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
-    public class TransactionCommnad : CommandBase
+    public class TransactionCommand : CommandBase
     {
         public override string CommandType => Commands.Transaction;
 

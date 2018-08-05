@@ -2,7 +2,7 @@
 
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
-    public class InventoryCommnad : CommandBase
+    public class InventoryCommand : CommandBase
     {
         public override string CommandType => Commands.Inventory;
 
@@ -13,7 +13,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
             var engine = node.Engine;
             var bc = engine.BlockChain;
 
-            var responseCmd = new GetDataCommnad { Items = this.Items };
+            var responseCmd = new GetDataCommand { Items = this.Items };
             connectionNode.Peer.Send(responseCmd);
         }
     }

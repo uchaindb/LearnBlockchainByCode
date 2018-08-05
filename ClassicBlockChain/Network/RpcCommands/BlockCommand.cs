@@ -3,7 +3,7 @@ using UChainDB.Example.Chain.Entity;
 
 namespace UChainDB.Example.Chain.Network.RpcCommands
 {
-    public class BlockCommnad : CommandBase
+    public class BlockCommand : CommandBase
     {
         public override string CommandType => Commands.Block;
 
@@ -22,7 +22,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
             // initialize sync process if broken chain block received
             if (bc.BlockHeadDictionary.ContainsKey(this.Block.Head.PreviousBlockHash))
             {
-                var getblkcmd = new GetBlocksCommnad
+                var getblkcmd = new GetBlocksCommand
                 {
                     BlockLocators = engine.BlockChain.GetBlockLocatorHashes(),
                     LastBlockHash = bc.Tail.Hash,

@@ -41,13 +41,13 @@ namespace UChainDB.Example.Chain.Network
 
         private void Engine_OnNewTxCreated(object sender, Transaction e)
         {
-            this.Broadcast(new TransactionCommnad { Transaction = e });
+            this.Broadcast(new TransactionCommand { Transaction = e });
         }
 
         private void Engine_OnNewBlockCreated(object sender, BlockHead e)
         {
             var blk = this.selfNode.Engine.BlockChain.GetBlock(e.Hash);
-            this.Broadcast(new BlockCommnad { Block = blk });
+            this.Broadcast(new BlockCommand { Block = blk });
         }
 
         private void Listener_OnPeerConnected(object sender, IPeer e)
