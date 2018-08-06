@@ -9,9 +9,9 @@ namespace UChainDB.Example.Chain.Wallet
         PrivateKey PrivateKey { get; }
         PublicKey PublicKey { get; }
 
-        Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value, int fee = 0);
+        Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value, int fee = 0, uint lockTime = 0);
 
-        Transaction SendMoney(Engine engine, Utxo[] utxos, params TxOutput[] outputs);
+        Transaction SendMoney(Engine engine, uint lockTime, Utxo[] utxos, params TxOutput[] outputs);
 
         void GenerateKeyPair();
 

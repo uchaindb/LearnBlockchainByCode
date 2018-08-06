@@ -32,16 +32,16 @@ namespace UChainDB.Example.Chain.Wallet
             this.AfterKeyPairGenerated();
         }
 
-        public Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value, int fee = 0)
+        public Transaction SendMoney(Engine engine, Transaction utxo, int index, IWallet receiver, int value, int fee = 0, uint lockTime = 0)
         {
             var total = utxo.Outputs[index].Value;
             var change = total - value - fee;
             var mainOutput = new TxOutput { PublicKey = receiver.PublicKey, Value = value };
             var changeOutput = new TxOutput { PublicKey = this.PublicKey, Value = change };
-            return this.SendMoney(engine, new[] { new Utxo(utxo, index) }, mainOutput, changeOutput);
+            return this.SendMoney(engine, lockTime, new[] { new Utxo(utxo, index) }, mainOutput, changeOutput);
         }
 
-        public Transaction SendMoney(Engine engine, Utxo[] utxos, params TxOutput[] outputs)
+        public Transaction SendMoney(Engine engine, uint lockTime, Utxo[] utxos, params TxOutput[] outputs)
         {
             var inputTxs = utxos
                 .Select(_ => new TxInput { PrevTxHash = _.Tx.Hash, PrevTxIndex = _.Index })
@@ -50,6 +50,7 @@ namespace UChainDB.Example.Chain.Wallet
             {
                 InputTxs = inputTxs,
                 Outputs = outputs,
+                LockTime = lockTime,
             };
             var sigList = new Signature[tx.InputTxs.Length];
             for (int i = 0; i < tx.InputTxs.Length; i++)

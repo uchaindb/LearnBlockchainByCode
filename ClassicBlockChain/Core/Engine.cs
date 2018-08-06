@@ -13,6 +13,7 @@ namespace UChainDB.Example.Chain.Core
 {
     public class Engine : IDisposable
     {
+        private const uint LockTimeBreakPoint = 1_500_000_000; // = July 14, 2017 2:40:00 AM
         public readonly BlockChain BlockChain;
 
         private readonly Thread thWorker;
@@ -65,6 +66,7 @@ namespace UChainDB.Example.Chain.Core
         {
             var finalTxs = this.BlockChain.DequeueTxs()
                 .Where(this.ValidateTx)
+                .Where(this.ValidateLockTime)
                 .ToList();
 
             var fee = CollectFee(finalTxs);
@@ -105,11 +107,36 @@ namespace UChainDB.Example.Chain.Core
                         .Select(_ => new TxInput { PrevTxHash = _.PrevTxHash, PrevTxIndex = _.PrevTxIndex })
                         .ToArray(),
                     Outputs = tx.Outputs.ToArray(),
+                    LockTime = tx.LockTime,
                 };
                 if (!this.signAlgo.Verify(new[] { Encoding.UTF8.GetBytes(verifyTx.HashContent) }, output.PublicKey, intx.Signature))
                     return false;
             }
             return true;
+        }
+
+        private bool ValidateLockTime(Transaction tx)
+        {
+            return tx.InputTxs
+                .Select(_ => this.BlockChain.GetTx(_.PrevTxHash))
+                .All(_ => this.ValidateLockTime(_.LockTime, DateTime.Now));
+        }
+
+        private bool ValidateLockTime(uint lockTime, DateTime time)
+        {
+            // field is ignored if it's 0
+            if (lockTime == 0) return true;
+            if (lockTime > LockTimeBreakPoint)
+            {
+                // it's unix time
+                var lockdt = DateTimeOffset.FromUnixTimeSeconds(lockTime);
+                return lockdt > time;
+            }
+            else
+            {
+                // it's block height
+                return this.BlockChain.Height > lockTime;
+            }
         }
 
         private int CollectFee(IEnumerable<Transaction> txs)

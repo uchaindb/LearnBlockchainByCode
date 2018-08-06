@@ -9,6 +9,7 @@ namespace UChainDB.Example.Chain.Entity
         private byte version;
         private TxInput[] inputTxs = new TxInput[] { };
         private TxOutput[] outputs = new TxOutput[] { };
+        private uint lockTime;
 
         public byte Version
         {
@@ -28,14 +29,22 @@ namespace UChainDB.Example.Chain.Entity
             set => this.SetPropertyField(ref this.outputs, value);
         }
 
+        public uint LockTime
+        {
+            get => this.lockTime;
+            set => this.SetPropertyField(ref this.lockTime, value);
+        }
+
         public override string ToString()
         {
             return this.DebuggerDisplay;
         }
 
-        protected internal override string HashContent => $"{this.Version}" +
-            $"|{string.Join(",", this.InputTxs?.Select(_ => _.HashContent) ?? new string[] { })}" +
-            $"|{string.Join(",", this.Outputs?.Select(_ => _.HashContent) ?? new string[] { })}";
+        protected internal override string HashContent => $"{this.Version}"
+            + $"|{string.Join(",", this.InputTxs?.Select(_ => _.HashContent) ?? new string[] { })}"
+            + $"|{string.Join(",", this.Outputs?.Select(_ => _.HashContent) ?? new string[] { })}"
+            + $"|{this.lockTime}"
+            ;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected override string DebuggerDisplay => $"" +

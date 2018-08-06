@@ -36,6 +36,8 @@ namespace UChainDB.Example.Chain
             var tailBlock = engine.BlockChain.GetBlock(engine.BlockChain.Tail.Hash);
             Console.WriteLine($"New block created at height[{height:0000}]: {tailBlock}");
 
+            var lockHeight = 8u;
+
             if (height == 2)
             {
                 var utxos = me.GetUtxos(engine);
@@ -50,7 +52,7 @@ namespace UChainDB.Example.Chain
                 alice.SyncBlockHead(engine);
                 var verify = alice.VerifyTx(engine, utxo.Tx);
                 Console.WriteLine($"verify [{utxo.Tx.Hash.ToShort()}]: {verify}");
-                h3tx = alice.SendMoney(engine, utxo.Tx, utxo.Index, bob, 20);
+                h3tx = alice.SendMoney(engine, utxo.Tx, utxo.Index, bob, 20, 0, lockHeight);
             }
             else if (height == 4)
             {
@@ -59,6 +61,20 @@ namespace UChainDB.Example.Chain
                 Console.WriteLine($"verify [{h3tx.Hash.ToShort()}]: {verify}");
                 // try to use used transaction which cannot pass validation and ignored
                 me.SendMoney(engine, h2utxo.Tx, h2utxo.Index, bob, 50);
+            }
+            else if (height == 5)
+            {
+                var utxos = bob.GetUtxos(engine);
+                var utxo = utxos.First();
+                // try to use locked transaction before unlocked
+                bob.SendMoney(engine, utxo.Tx, utxo.Index, alice, 10);
+            }
+            else if (height == lockHeight + 1)
+            {
+                var utxos = bob.GetUtxos(engine);
+                var utxo = utxos.First();
+                // try to use locked transaction after unlocked
+                bob.SendMoney(engine, utxo.Tx, utxo.Index, alice, 10);
             }
         }
     }
