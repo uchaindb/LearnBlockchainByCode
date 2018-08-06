@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 using UChainDB.Example.Chain.Core;
 using UChainDB.Example.Chain.Entity;
-using UChainDB.Example.Chain.Network.InMemory;
 using UChainDB.Example.Chain.Network.RpcCommands;
 
 namespace UChainDB.Example.Chain.Network
@@ -23,7 +18,6 @@ namespace UChainDB.Example.Chain.Network
         private Timer reconnectTimer;
         private bool isReceiving = false;
         private Thread thReceive;
-        public event EventHandler<CommandBase> OnCommandReceived;
 
         public ConnectionPool(Node node, string[] wellKnowns, IPeerFactory peerFactory, IListener listener)
         {
@@ -37,6 +31,35 @@ namespace UChainDB.Example.Chain.Network
             this.listener.OnPeerConnected += Listener_OnPeerConnected;
             this.selfNode.Engine.OnNewBlockCreated += Engine_OnNewBlockCreated;
             this.selfNode.Engine.OnNewTxCreated += Engine_OnNewTxCreated;
+        }
+
+        public event EventHandler<CommandBase> OnCommandReceived;
+
+        public void Start()
+        {
+            this.reconnectTimer = new Timer((_) => this.ConnectAll(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));
+            this.thReceive = new Thread(Receive);
+            this.thReceive.Start();
+            this.isReceiving = true;
+        }
+
+        public void Dispose()
+        {
+            this.isReceiving = false;
+            this.reconnectTimer?.Dispose();
+            ConnectionNode[] internalnodes;
+            lock (this.nodes)
+            {
+                internalnodes = this.nodes
+                    .Where(_ => _.Status == ConnectionStatus.Connected)
+                    .ToArray();
+            }
+            foreach (var node in internalnodes)
+            {
+                node.Peer.Close();
+                node.Peer?.Dispose();
+            }
+            this.thReceive.Join();
         }
 
         private void Engine_OnNewTxCreated(object sender, Transaction e)
@@ -55,8 +78,8 @@ namespace UChainDB.Example.Chain.Network
             lock (this.nodes)
             {
                 var prev = this.nodes
-                    .FirstOrDefault(_ => 
-                        _.Peer.TargetAddress == e.TargetAddress 
+                    .FirstOrDefault(_ =>
+                        _.Peer.TargetAddress == e.TargetAddress
                         && _.Peer.BaseAddress == e.BaseAddress);
                 if (prev != null) this.nodes.Remove(prev);
                 this.nodes.Add(new ConnectionNode()
@@ -64,14 +87,6 @@ namespace UChainDB.Example.Chain.Network
                     Peer = e,
                 });
             }
-        }
-
-        public void Start()
-        {
-            this.reconnectTimer = new Timer((_) => this.ConnectAll(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));
-            this.thReceive = new Thread(Receive);
-            this.thReceive.Start();
-            this.isReceiving = true;
         }
 
         private void Receive()
@@ -120,7 +135,7 @@ namespace UChainDB.Example.Chain.Network
             }
         }
 
-        public void Broadcast(CommandBase command)
+        private void Broadcast(CommandBase command)
         {
             ConnectionNode[] internalnodes;
             lock (this.nodes)
@@ -133,25 +148,6 @@ namespace UChainDB.Example.Chain.Network
             {
                 node.Peer.Send(command);
             }
-        }
-
-        public void Dispose()
-        {
-            this.isReceiving = false;
-            this.reconnectTimer?.Dispose();
-            ConnectionNode[] internalnodes;
-            lock (this.nodes)
-            {
-                internalnodes = this.nodes
-                    .Where(_ => _.Status == ConnectionStatus.Connected)
-                    .ToArray();
-            }
-            foreach (var node in internalnodes)
-            {
-                node.Peer.Close();
-                node.Peer?.Dispose();
-            }
-            this.thReceive.Join();
         }
 
         private void TryConnect(ConnectionNode node)

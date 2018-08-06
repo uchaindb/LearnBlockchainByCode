@@ -10,9 +10,6 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
 
         public override void OnReceived(Node node, ConnectionNode connectionNode)
         {
-            var engine = node.Engine;
-            var bc = engine.BlockChain;
-
             var responseCmd = new GetDataCommand { Items = this.Items };
             connectionNode.Peer.Send(responseCmd);
         }

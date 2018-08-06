@@ -10,8 +10,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
 
         public override void OnReceived(Node node, ConnectionNode connectionNode)
         {
-            var engine = node.Engine;
-            var bc = engine.BlockChain;
+            var bc = node.Engine.BlockChain;
             foreach (var item in this.Items)
             {
                 switch (item.Type)

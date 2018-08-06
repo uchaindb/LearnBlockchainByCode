@@ -18,8 +18,6 @@ namespace UChainDB.Example.Chain.Network.InMemory
         public string BaseAddress { get; protected set; }
         public bool IsConnected { get; protected set; }
 
-        public string State => "Normal";
-
         public abstract void Connect(string connectionString);
 
         public void Send(CommandBase command)
@@ -44,11 +42,6 @@ namespace UChainDB.Example.Chain.Network.InMemory
 
         public virtual void Dispose()
         {
-        }
-
-        internal void InternalSend(CommandBase command)
-        {
-            this.receivedData.Enqueue(command);
         }
     }
 }

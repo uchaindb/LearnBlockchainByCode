@@ -11,9 +11,7 @@ namespace UChainDB.Example.Chain.Network.RpcCommands
 
         public override void OnReceived(Node node, ConnectionNode connectionNode)
         {
-            var engine = node.Engine;
-            var bc = engine.BlockChain;
-
+            var bc = node.Engine.BlockChain;
             bc.SyncTx(this.Transaction);
         }
     }
