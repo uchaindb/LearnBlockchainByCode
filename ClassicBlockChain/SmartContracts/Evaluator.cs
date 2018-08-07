@@ -48,30 +48,6 @@ namespace UChainDB.Example.Chain.SmartContracts
                             stack.Push(ScriptToken.CreateToken(ret));
                             break;
                         }
-                    case OpCode.CheckOneOfMultiSignature:
-                        {
-                            if (!stack.CanPop()) return false;
-                            var number = stack.Pop().GetValue<int>();
-                            var pubKeyList = new List<PublicKey>();
-                            for (int i = 0; i < number; i++)
-                            {
-                                if (!stack.CanPop()) return false;
-                                var pubKey = PublicKey.ParseBase58(stack.Pop().GetValue());
-                                pubKeyList.Add(pubKey);
-                            }
-
-                            if (!stack.CanPop()) return false;
-                            var sig = Signature.ParseBase58(stack.Pop().GetValue());
-
-                            var ret = false;
-                            for (int i = 0; i < number; i++)
-                            {
-                                ret = algorithm.Verify(new[] { (byte[])transaction.GetLockHash() }, pubKeyList[i], sig);
-                                if (ret) break;
-                            }
-                            stack.Push(ScriptToken.CreateToken(ret));
-                            break;
-                        }
                     default:
                         Console.WriteLine($"unexpected opcode [{token.OpCode}]");
                         break;

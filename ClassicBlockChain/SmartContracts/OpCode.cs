@@ -79,6 +79,5 @@
         Hash160,
         Hash256,
         CheckSignature,
-        CheckOneOfMultiSignature,
     }
 }

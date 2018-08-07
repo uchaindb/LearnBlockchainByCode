@@ -34,20 +34,6 @@ namespace UChainDB.Example.Chain.SmartContracts
             ScriptToken.CreateToken(OpCode.CheckSignature),
         };
 
-        /*
-         * [sig, | pubkey1, pubkey2, ..., pubkeyN, N] -> Check One Of Multiple Signatures
-         */
-
-        public static UnlockScripts ProduceMultiUnlockScript(this Signature sig) => (UnlockScripts)new[] {
-            ScriptToken.CreateToken(sig.ToBase58()),
-        };
-
-        public static LockScripts ProduceMultiLockScript(this IEnumerable<PublicKey> pubKeyList) => (LockScripts)pubKeyList
-            .Select(_ => ScriptToken.CreateToken(_.ToBase58()))
-            .Concat(new[] { ScriptToken.CreateToken(pubKeyList.Count()) })
-            .Concat(new[] { ScriptToken.CreateToken(OpCode.CheckOneOfMultiSignature) })
-            .ToArray();
-
         public static bool CanUnlock(this Transaction tran, TxInput input, TxOutput output)
         {
             try
