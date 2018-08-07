@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UChainDB.Example.Chain.Core;
 using UChainDB.Example.Chain.Entity;
+using UChainDB.Example.Chain.SmartContracts;
 using UChainDB.Example.Chain.Utility;
 
 namespace UChainDB.Example.Chain.Wallet
@@ -36,8 +37,8 @@ namespace UChainDB.Example.Chain.Wallet
         {
             var total = utxo.Outputs[index].Value;
             var change = total - value - fee;
-            var mainOutput = new TxOutput { PublicKey = receiver.PublicKey, Value = value };
-            var changeOutput = new TxOutput { PublicKey = this.PublicKey, Value = change };
+            var mainOutput = new TxOutput { LockScripts = receiver.PublicKey.ProduceSingleLockScript(), Value = value };
+            var changeOutput = new TxOutput { LockScripts = this.PublicKey.ProduceSingleLockScript(), Value = change };
             return this.SendMoney(engine, lockTime, new[] { new Utxo(utxo, index) }, mainOutput, changeOutput);
         }
 
@@ -57,13 +58,13 @@ namespace UChainDB.Example.Chain.Wallet
             {
                 var utxoEnt = utxos[i];
                 sigList[i] = this.signAlgo.Sign(
-                    new[] { Encoding.UTF8.GetBytes(tx.HashContent) },
-                    this.FindPrivateKey(utxoEnt.Tx.Outputs[utxoEnt.Index].PublicKey));
+                    new[] { (byte[])tx.GetLockHash() },
+                    this.FindPrivateKey(utxoEnt.Tx.Outputs[utxoEnt.Index].LockScripts));
             }
 
             for (int i = 0; i < tx.InputTxs.Length; i++)
             {
-                tx.InputTxs[i].Signature = sigList[i];
+                tx.InputTxs[i].UnlockScripts = sigList[i].ProduceSingleUnlockScript();
             }
             engine.AttachTx(tx);
 
@@ -75,7 +76,7 @@ namespace UChainDB.Example.Chain.Wallet
             var txlist = engine.BlockChain.TxToBlockDictionary
                 .Select(_ => engine.BlockChain.GetTx(_.Key))
                 .SelectMany(_ => _.Outputs.Select((txo, i) => new { tx = _, txo, i }))
-                .Where(_ => this.ContainPubKey(_.txo.PublicKey))
+                .Where(_ => this.ContainPubKey(_.txo.LockScripts))
                 .Where(_ => !engine.BlockChain.UsedTxDictionary.ContainsKey((_.tx.Hash, _.i)))
                 .Select(_ => new Utxo(_.tx, _.i))
                 .ToArray();
@@ -113,8 +114,8 @@ namespace UChainDB.Example.Chain.Wallet
         {
         }
 
-        protected abstract PrivateKey FindPrivateKey(PublicKey publicKey);
+        protected abstract PrivateKey FindPrivateKey(LockScripts lockScripts);
 
-        protected abstract bool ContainPubKey(PublicKey publicKey);
+        protected abstract bool ContainPubKey(LockScripts lockScripts);
     }
 }

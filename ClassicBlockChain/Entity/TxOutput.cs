@@ -1,16 +1,22 @@
 ﻿using System;
+using UChainDB.Example.Chain.SmartContracts;
 
 namespace UChainDB.Example.Chain.Entity
 {
     public class TxOutput
     {
-        public PublicKey PublicKey { get; set; }
+        public LockScripts LockScripts { get; set; }
         public int Value { get; set; }
 
-        internal string HashContent => $"{this.Value}" +
-            $"|{Convert.ToBase64String(this.PublicKey)}";
+        internal string HashContent => this.LockHashContent
+            + $"|{this.LockScripts}"
+            ;
 
-        public override string ToString() => $"{this.Value}" +
-            $": {this.PublicKey.ToBase58().Substring(0, 12)}";
+        internal string LockHashContent => $"{this.Value}"
+            ;
+
+        public override string ToString() => $"{this.Value}"
+            + $": {this.LockScripts?.ToString().Substring(0, 12)}"
+            ;
     }
 }

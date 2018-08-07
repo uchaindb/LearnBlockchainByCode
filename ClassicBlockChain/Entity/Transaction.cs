@@ -35,11 +35,6 @@ namespace UChainDB.Example.Chain.Entity
             set => this.SetPropertyField(ref this.lockTime, value);
         }
 
-        public override string ToString()
-        {
-            return this.DebuggerDisplay;
-        }
-
         protected internal override string HashContent => $"{this.Version}"
             + $"|{string.Join(",", this.InputTxs?.Select(_ => _.HashContent) ?? new string[] { })}"
             + $"|{string.Join(",", this.Outputs?.Select(_ => _.HashContent) ?? new string[] { })}"
@@ -47,11 +42,28 @@ namespace UChainDB.Example.Chain.Entity
             ;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected override string DebuggerDisplay => $"" +
-            $"{this.Hash.ToShort()}: " +
-            $"({string.Join(",", this.Outputs?.Select(_ => _.ToString()) ?? new string[] { })}) <-- " +
-            ((this.InputTxs != null && this.InputTxs.Length > 0)
+        protected override string DebuggerDisplay => ""
+            + $"{this.Hash.ToShort()}: "
+            + $"({string.Join(",", this.Outputs?.Select(_ => _.ToString()) ?? new string[] { })}) <-- "
+            + ((this.InputTxs != null && this.InputTxs.Length > 0)
                 ? $"({string.Join(",", this.InputTxs.Select(_ => _.ToString()))})"
-                : $"(Coin Base)");
+                : $"(Coin Base)")
+            + (lockTime > 0
+                ? $"[lock: {this.lockTime}]"
+                : "")
+            ;
+
+        protected string LockHashContent => $"{this.Version}"
+            + $"|{string.Join(",", this.InputTxs?.Select(_ => _.LockHashContent) ?? new string[] { })}"
+            + $"|{string.Join(",", this.Outputs?.Select(_ => _.LockHashContent) ?? new string[] { })}"
+            + $"|{this.lockTime}"
+            ;
+
+        public override string ToString()
+        {
+            return this.DebuggerDisplay;
+        }
+
+        public UInt256 GetLockHash() => new Hash(LockHashContent);
     }
 }

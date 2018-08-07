@@ -1,4 +1,5 @@
 ﻿using System;
+using UChainDB.Example.Chain.SmartContracts;
 using UChainDB.Example.Chain.Utility;
 
 namespace UChainDB.Example.Chain.Entity
@@ -7,14 +8,19 @@ namespace UChainDB.Example.Chain.Entity
     {
         public UInt256 PrevTxHash { get; set; }
         public int PrevTxIndex { get; set; }
-        public Signature Signature { get; set; }
+        public UnlockScripts UnlockScripts { get; set; }
 
-        internal string HashContent => $"{this.PrevTxHash.ToHex()}" +
-            $"|{this.PrevTxIndex}" +
-            $"|{(this.Signature == null ? "" : Convert.ToBase64String(this.Signature))}";
+        internal string HashContent => this.LockHashContent
+            + $"|{this.UnlockScripts}"
+            ;
 
-        public override string ToString() => $"{this.PrevTxHash.ToShort()}" +
-            $"[{this.PrevTxIndex}]" +
-            $": {(this.Signature == null ? "(no sig)" : Convert.ToBase64String(this.Signature).Substring(0, 12))}";
+        internal string LockHashContent => $"{this.PrevTxHash.ToHex()}"
+            + $"|{this.PrevTxIndex}"
+            ;
+
+        public override string ToString() => $"{this.PrevTxHash.ToShort()}"
+            + $"[{this.PrevTxIndex}]"
+            + $": {(this.UnlockScripts?.ToString().Substring(0, 12))}"
+            ;
     }
 }

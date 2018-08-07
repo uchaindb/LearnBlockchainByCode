@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UChainDB.Example.Chain.Entity;
+using UChainDB.Example.Chain.SmartContracts;
 
 namespace UChainDB.Example.Chain.Wallet
 {
@@ -19,17 +21,17 @@ namespace UChainDB.Example.Chain.Wallet
             this.usedPublicKeys.Add(this.PublicKey);
         }
 
-        protected override PrivateKey FindPrivateKey(PublicKey publicKey)
+        protected override PrivateKey FindPrivateKey(LockScripts lockScripts)
         {
-            var idx = this.usedPublicKeys.FindIndex(_ => _ == publicKey);
+            var idx = this.usedPublicKeys.FindIndex(_ => lockScripts.Contains(new ScriptToken(_.ToBase58())));
             if (idx == -1)
                 throw new KeyNotFoundException("cannot find corresponding public key");
             return this.usedPrivateKeys[idx];
         }
 
-        protected override bool ContainPubKey(PublicKey publicKey)
+        protected override bool ContainPubKey(LockScripts lockScripts)
         {
-            return this.usedPublicKeys.Contains(publicKey);
+            return this.usedPublicKeys.Any(_ => lockScripts.Contains(new ScriptToken(_.ToBase58())));
         }
     }
 }

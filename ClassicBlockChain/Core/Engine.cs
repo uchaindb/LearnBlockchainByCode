@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using UChainDB.Example.Chain.Entity;
+using UChainDB.Example.Chain.SmartContracts;
 using UChainDB.Example.Chain.Utility;
 using UChainDB.Example.Chain.Wallet;
 
@@ -71,10 +72,12 @@ namespace UChainDB.Example.Chain.Core
 
             var fee = CollectFee(finalTxs);
             this.MinerWallet.GenerateKeyPair();
-            var minerTx = new Transaction
+            var minerTxOut = new TxOutput
             {
-                Outputs = new[] { new TxOutput { PublicKey = this.MinerWallet.PublicKey, Value = this.BlockChain.RewardOfBlock + fee } },
+                LockScripts = this.MinerWallet.PublicKey.ProduceSingleLockScript(),
+                Value = this.BlockChain.RewardOfBlock + fee
             };
+            var minerTx = new Transaction { Outputs = new[] { minerTxOut }, };
             var allTxs = new[] { minerTx }.Concat(finalTxs).ToArray();
 
             var prevBlock = this.BlockChain.Tail;
@@ -109,7 +112,7 @@ namespace UChainDB.Example.Chain.Core
                     Outputs = tx.Outputs.ToArray(),
                     LockTime = tx.LockTime,
                 };
-                if (!this.signAlgo.Verify(new[] { Encoding.UTF8.GetBytes(verifyTx.HashContent) }, output.PublicKey, intx.Signature))
+                if (!verifyTx.CanUnlock(intx, output))
                     return false;
             }
             return true;
