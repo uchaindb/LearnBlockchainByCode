@@ -44,11 +44,6 @@ namespace UChainDB.Example.Chain.SmartContracts
             return this.Object;
         }
 
-        public T GetValue<T>()
-        {
-            return (T)Convert.ChangeType(this.Object, typeof(T));
-        }
-
         public static ScriptToken CreateToken(object obj)
         {
             return new ScriptToken(obj);
@@ -57,11 +52,6 @@ namespace UChainDB.Example.Chain.SmartContracts
         public override string ToString() => this.IsOpCode
             ? $"{TOKEN_PREFIX}{this.OpCode}"
             : $"{this.Object}";
-
-        public ScriptToken Clone()
-        {
-            return new ScriptToken(this.IsOpCode ? (object)this.OpCode : this.Object);
-        }
 
         public override bool Equals(object obj)
         {
@@ -80,30 +70,6 @@ namespace UChainDB.Example.Chain.SmartContracts
         public override int GetHashCode()
         {
             return this.IsOpCode ? this.OpCode.GetHashCode() : this.Object.GetHashCode();
-        }
-
-        public static ScriptToken[] Parse(string code)
-        {
-            var lines = code.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            return lines
-                .Select(_=>_.Trim())
-                .Select(_ => new ScriptToken(_))
-                .ToArray();
-        }
-
-        public static bool TryParse(string code, out ScriptToken[] lockScripts)
-        {
-            try
-            {
-                lockScripts = Parse(code);
-            }
-            catch (ArgumentException)
-            {
-                lockScripts = null;
-                return false;
-            }
-
-            return true;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
