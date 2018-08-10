@@ -14,8 +14,6 @@ namespace UChainDB.Example.Chain.SmartContracts
         {
         }
 
-        public static WholeScripts Empty { get => new WholeScripts(new ScriptToken[] { }); }
-
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected string DebuggerDisplay => string.Join(Environment.NewLine, this.Select(_ => _.ToString()) ?? new string[] { });
 
