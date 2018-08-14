@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+using UChainDB.Example.Chain.Utility;
 
 namespace UChainDB.Example.Chain.Entity
 {
