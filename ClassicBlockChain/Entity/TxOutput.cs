@@ -1,6 +1,6 @@
 ﻿namespace UChainDB.Example.Chain.Entity
 {
-    public class TransactionOutput
+    public class TxOutput
     {
         public string Owner { get; set; }
         public int Value { get; set; }

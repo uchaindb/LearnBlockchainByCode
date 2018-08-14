@@ -11,7 +11,7 @@ namespace UChainDB.Example.Chain
         private const string AliceName = "Alice";
         private const string BobName = "Bob";
 
-        private static Transaction h2utxo = null;
+        private static Tx h2utxo = null;
 
         private static void Main(string[] args)
         {
@@ -34,34 +34,34 @@ namespace UChainDB.Example.Chain
 
             if (height == 2)
             {
-                var utxo = engine.BlockChain.Tail.Transactions.First();
+                var utxo = engine.BlockChain.Tail.Txs.First();
                 h2utxo = utxo;
                 SendMoney(engine, utxo, AliceName, 50);
             }
             else if (height == 3)
             {
-                var utxo = engine.BlockChain.Tail.Transactions
-                    .First(txs => txs.OutputOwners.Any(_ => _.Owner == AliceName));
+                var utxo = engine.BlockChain.Tail.Txs
+                    .First(txs => txs.Outputs.Any(_ => _.Owner == AliceName));
                 SendMoney(engine, utxo, BobName, 50);
             }
             else if (height == 4)
             {
-                // try to use used transaction which cannot pass validation and ignored
+                // try to use used tx which cannot pass validation and ignored
                 SendMoney(engine, h2utxo, BobName, 50);
             }
         }
 
-        private static void SendMoney(Engine engine, Transaction utxo, string receiver, int value)
+        private static void SendMoney(Engine engine, Tx utxo, string receiver, int value)
         {
-            SendMoney(engine, utxo, new TransactionOutput { Owner = receiver, Value = value });
+            SendMoney(engine, utxo, new TxOutput { Owner = receiver, Value = value });
         }
 
-        private static void SendMoney(Engine engine, Transaction utxo, params TransactionOutput[] outputs)
+        private static void SendMoney(Engine engine, Tx utxo, params TxOutput[] outputs)
         {
-            engine.AttachTransaction(new Transaction
+            engine.AttachTx(new Tx
             {
-                InputTransactions = new[] { utxo.Hash },
-                OutputOwners = outputs,
+                Inputs = new[] { utxo.Hash },
+                Outputs = outputs,
             });
         }
     }
