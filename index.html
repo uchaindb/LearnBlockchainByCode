@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/pure.css" title="pure" disabled>
   <link rel="stylesheet" href="//unpkg.com/prismjs/themes/prism.css">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
+  <script src="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <!-- <script src="//unpkg.com/docsify&#45;plugin&#45;codefund/index.js"></script> -->
   <style>
     nav.app-nav li ul {
@@ -37,7 +39,26 @@
 <body>
   <div id="app">Loading ...</div>
   <script>
+    var num = 0;
+    mermaid.initialize({ startOnLoad: false });
+
     window.$docsify = {
+      markdown: {
+        renderer: {
+          code: function(code, lang) {
+            if (lang === "mermaid") {
+              return (
+                '<div class="mermaid">' + mermaid.render('mermaid-svg-' + num++, code) + "</div>"
+              );
+            }
+            if (lang === "cs") {
+              return this.origin.code.apply(this, [code, "csharp"]);
+            }
+            console.log(this.origin, arguments, this);
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      },
       alias: {
         '.*?/awesome': 'https://raw.githubusercontent.com/docsifyjs/awesome-docsify/master/README.md',
         '.*?/changelog': 'https://raw.githubusercontent.com/docsifyjs/docsify/master/CHANGELOG.md',
@@ -88,15 +109,20 @@
             // var match = pattern.exec(html); 
           })
         },
-        function (hook, vm) {
-          hook.beforeEach(function (html) {
-            return html.replace(/```cs\s/g, "```csharp");
-          })
-        },
+        // function (hook, vm) {
+        //   hook.beforeEach(function (html) {
+        //     return html.replace(/```cs\s/g, "```csharp");
+        //   })
+        // },
         function (hook, vm) {
           hook.beforeEach(function (html) {
             return html.replace(/\^(.+?)\^(?!(.*end-inline-katex))/g, "<sup>$1</sup>");
           })
+        // },
+        // function (hook, vm) { 
+        //   hook.mounted(function() {
+        //     // Called after initial completion. Only trigger once, no arguments.
+        //   })
         }
       ]
     }

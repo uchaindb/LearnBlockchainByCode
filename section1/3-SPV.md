@@ -140,7 +140,20 @@ public IEnumerable<MerkleTreeNode> GetLeafs()
 
 轻量客户端验证交易的过程如下图。
 
-![](_images/3/image61.png)
+```mermaid
+sequenceDiagram
+  participant spv as 轻量客户端
+  participant node as 全节点
+
+  spv ->> node: 请求交易验证信息（交易编号）
+  activate node
+  node ->> node: 抽取部分哈希树
+  node -->> spv: 发送验证信息（哈希数组、标志位）
+  deactivate node
+  activate spv
+  spv ->> spv: 重建部分哈希树并验证
+  deactivate spv
+```
 
 在轻量客户端向全节点请求交易验证信息后，全节点会根据轻量客户端提供的交易编号，
 将与该交易有关的区块中的交易哈希树抽取部分哈希树（Partial Merkle Tree），
