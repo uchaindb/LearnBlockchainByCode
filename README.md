@@ -33,6 +33,8 @@ Users and the development team are usually in the [Gitter chat room](https://git
 
 # Vue guide
 
+{docsify-updated}
+
 `v-for` usage.
 
 ```html
