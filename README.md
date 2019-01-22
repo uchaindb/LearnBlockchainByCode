@@ -1,75 +1,103 @@
-## docsify
+# 《区块链系统实现》简介
 
-> A magical documentation site generator.
+**亲自用代码来实现数个区块链，更加深刻理解区块链的革命性**
 
-## What it is
+> 本书里详细的带领大家通过亲自编写一个类比特币的区块链程序，
+> 再编写一个类以太坊的区块链程序，最终结合这个过程中学到的经验，
+> 编写了一个区块链数据库程序，以此让读者朋友们了解到编写区块链程序的过程，
+> 以及这个过程中涉及到的问题和挑战，
+> 为未来读者朋友自己实现符合自己业务需求的区块链数据库奠定基础。
 
-docsify generates your documentation website on the fly. Unlike GitBook, it does not generate static html files. Instead, it smartly loads and parses your Markdown files and displays them as a website. To start using it, all you need to do is create an `index.html` and [deploy it on GitHub Pages](deploy.md).
+欢迎阅读本书，本书将带领大家，一步一步地编程实现三种不同的区块链系统，并针对这个过程中遇到的各种挑战
+和问题进行详解和演示。
 
-See the [Quick start](quickstart.md) guide for more details.
+区块链所用到的技术并非都是全新的，但是将过去的这一系列的技术组合而成的区块链技术，表现出
+了极其强大的生命力，使其在各个领域都表现出了极强的革命性。
 
-## Features
+!> 注意：本书尚未编写完成，内容持续添加中。
 
-- No statically built html files
-- Simple and lightweight (~21kB gzipped)
-- Smart full-text search plugin
-- Multiple themes
-- Useful plugin API
-- Emoji support
-- Compatible with IE10+
-- Support server-side rendering ([example](https://github.com/docsifyjs/docsify-ssr-demo))
+## 谁需要区块链
 
-## Examples
+现在的互联网是信息互联网，而我们称区块链为价值互联网。这当中有什么不同呢。我们回想一下，
+在互联网没有普及之前。大家通过电视，报纸，传统媒体来传递信息。
+这是一种相对中心化的方式，大家看到的信息都是差不多的。
+而由于互联网的出现，原来信息传递的方式完全改变了。
+每个人都可以是互联网上的一个节点，向外进行分发信息。所以后来这也被称之为自媒体时代。
+但是在这样的时代里，因为信息的传播不需要任何代价，这既是互联网的长项，也是他的弱项。
+篡改数据是非常容易的。因此大家看到了现在谣言满天飞。
 
-Check out the [Showcase](https://github.com/docsifyjs/docsify/#showcase) to see docsify in use.
+当我们如果进入到价值互联网时，区块链就是这样一个底层的技术，一方面它保证了像互联网一样，
+在全球范围内高速传播，另一方面又杜绝了数据篡改的问题，所以区块链会成为价值互联网的基础。
 
-## Donate
+以下根据区块链的三方面特点，整理除了最常见的，充分使用了对应特点的应用。
 
-Please consider donating if you think docsify is helpful to you or that my work is valuable. I am happy if you can help me [buy a cup of coffee](https://github.com/QingWei-Li/donate). :heart:
+<table>
+  <tr>
+    <th>特点</th>
+    <th>不变性 (Immutability)</th>
+    <th>分布式 (Decentralization)</th>
+    <th>自动化 (Autonomous)</th>
+  </tr>
+  <tr>
+    <td>应用</td>
+    <td>
 
-## Community
+- 电子货币
+- 溯源防伪
+- 公益捐赠
+- 法律公证
+    </td>
+    <td>
 
-Users and the development team are usually in the [Gitter chat room](https://gitter.im/docsifyjs/Lobby).
 
-# mermaid
+- 电子货币
+- 电子娱乐
+- 版权保护
+- 万物互联
+    </td>
+    <td>
 
-```mermaid
-sequenceDiagram
-    participant Alice
-    participant Bob
-    Alice->John: Hello John, how are you?
-    loop Healthcheck
-        John->John: Fight against hypochondria
-    end
-    Note right of John: Rational thoughts <br/>prevail...
-    John-->Alice: Great!
-    John->Bob: How about you?
-    Bob-->John: Jolly good!
-```
 
-# Vue guide
+- 众筹投资
+- 智能资产
+- 互助保险
+- 电子身份
+    </td>
+  </tr>
+</table>
 
-{docsify-updated}
+> 区块链最重要的是解决了中介信用问题。
+> 在过去，两个互不认识信任的人要达成协作是很难的，它须要依靠第三方。
+> 通过区块链技术，比特币是人类第一次实现在没有任何中介机构参与下完成双方可以互信的转账行为。
+> **利用区块链的特点，可以在没有第三方信任机构存在的情况下，达成互信。**
 
-`v-for` usage.
+因此，凡是存在信任问题的场景，都可以由区块链改变生产关系，进而提高生产能力。
 
-```html
-<ul>
-  <li v-for="i in 10">{{ i }}</li>
-</ul>
-```
+## 本书针对的读者
 
-<ul>
-  <li v-for="i in 10">{{ i }}</li>
-</ul>
+本书假定您已经拥有一种编程语言的基础，在此并不限定或假设是哪一种。本书的编写，
+特意考虑了读者中存在的广泛编程背景，尽量让这些读者均能够理解本书的精髓，
+另一方面，也为了读者可以更容易的实际操作，本书选择了使用C#作为编程语言，
+所有范例均可以直接运行和调试，让本书的实操性进一步提高。本书并不会针对C#编程语言进行过多的解释，
+如果您尚未熟悉任意一门编程语言，您也可以通过本书了解到区块链系统的方方面面和技术细节，
+对于研究区块链技术，仍旧不失为一个不错的选择。
 
-# Vue demo
+## 如何使用本书
 
-<div id="main2">hello {{ msg }}</div>
+本书设计为顺序阅读，后面章节的程序均会依赖前一章节中已经实现的程序，
+不过如果您已经拥有了区块链的基本编程经验，尤其是类比特币的古典区块链的实现经验，
+您也可以直接跳至第二部分——当代区块链的实现。
 
-<script>
-  new Vue({
-    el: '#main2',
-    data: { msg: 'Vue' }
-  })
-</script>
+本书总共分为三个部分：
+
+* 古典区块链的实现：类比特币的区块链实现方法，并详细的讲解了区块链的基础知识；
+* 当代区块链的实现：以前一部分的知识为基础，讲解类以太坊的区块链实现方法；
+* 区块链数据库的实现：以前一部分的知识为基础，讲解基于区块链技术的关系型数据库的实现方法；
+
+## 本书作者
+
+* [梁爽（冰河魔法师/Icer）](https://www.icerdesign.com/about.html)
+
+## 开源书籍
+
+您可以在[GitHub]()找到生成本书的完整源代码。
