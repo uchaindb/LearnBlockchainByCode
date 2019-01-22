@@ -223,31 +223,28 @@ TODO: image
 | ![](_images/3/image62.png)从列表中选取了哈希值 |
 | ![](_images/3/image62.png)目标的交易           |
 
-
-| 哈希树                     | 参数                                              | 步骤详情                       |
-| ---                        | ---                                               | ---                            |
-| ![](_images/3/image63.png) | 哈希列表：H1 H2 H3 H4 <br/> 标志位：1 0 1 1 1 0 0 | 根据交易数量初始化树形结构     |
-| ![](_images/3/image64.png) | 哈希列表：H1 H2 H3 H4 <br/> 标志位：1 0 1 1 1 0 0 | 从根节点开始                   |
-|                            |                                                   | 执行**非交易节点-1**           |
-|                            |                                                   | 先处理左子节点                 |
-| ![](_images/3/image65.png) | 哈希列表：H1 H2 H3 H4 <br/> 标志位：0 1 1 1 0 0   | 执行**非交易节点-0**           |
-|                            |                                                   | 提取哈希值                     |
-| ![](_images/3/image66.png) | 哈希列表：H2 H3 H4 <br/> 标志位： 1 1 0 0         | 回到根节点                     |
-|                            |                                                   | 继续处理右子节点               |
-|                            |                                                   | 执行**非交易节点-1**           |
-|                            |                                                   | 先处理左子节点                 |
-| ![](_images/3/image67.png) | 哈希列表：H2 H3 H4 <br/> 标志位： 1 0 0           | 执行**非交易节点-1**           |
-|                            |                                                   | 先处理左子节点                 |
-| ![](_images/3/image68.png) | 哈希列表：H2 H3 H4 <br/> 标志位： 0 0             | 执行**交易节点-1**             |
-|                            |                                                   | 提取哈希值                     |
-|                            |                                                   | 标记为请求的交易               |
-| ![](_images/3/image69.png) | 哈希列表：H3 H4 <br/> 标志位：0 0                 | 执行**交易节点-0**             |
-|                            |                                                   | 提取哈希值                     |
-| ![](_images/3/image70.png) | 哈希列表：H4 <br/> 标志位：                       | 根据左右子节点计算该节点哈希值 |
-| ![](_images/3/image71.png) | 哈希列表：H4 <br/> 标志位：                       | 执行**非交易节点-0**           |
-|                            |                                                   | 提取哈希值                     |
-| ![](_images/3/image72.png) | 哈希列表：H4 <br/> 标志位：                       | 根据左右子节点计算该节点哈希值 |
-| ![](_images/3/image73.png) | 哈希列表：H4 <br/> 标志位：                       | 根据左右子节点计算该节点哈希值 |
+<div id="table1">
+<table>
+<thead>
+<tr class="header">
+<th>哈希树</th>
+<th>参数</th>
+<th>步骤详情</th>
+</tr>
+</thead>
+<tbody>
+<tr v-for="step in steps">
+<td><img :src="'/section1/_images/3/' + step.image" /></td>
+<td>
+哈希列表：<br/>
+<span style="white-space: nowrap">{{step.hashList}}</span><br/>
+标志位：<br/>
+{{step.tagList}}</td>
+<td v-html="marked((step.extraExplain ? step.extraExplain + '\n' : '') + explains[step.explain])"></td>
+</tr>
+</tbody>
+</table>
+</div>
 
 为了支持重建部分哈希树，在哈希树类中添加以下方法。
 
@@ -386,6 +383,7 @@ public static UInt256 GetPartialTreeRootHash(int txNumber, UInt256[] hashes, Bit
 - ![](_images/3/image74.png)放入哈希列表的节点
 - ![](_images/3/image74.png)标记的节点
 
+<div id="table2">
 <table>
 <thead>
 <tr class="header">
@@ -395,98 +393,18 @@ public static UInt256 GetPartialTreeRootHash(int txNumber, UInt256[] hashes, Bit
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><img src="/section1/_images/3/image75.png" /></td>
+<tr v-for="step in steps">
+<td><img :src="'/section1/_images/3/' + step.image" /></td>
 <td>
-哈希列表：&lt;空&gt;<br/>
-标志位：&lt;空&gt;</td>
-<td>初始化完整哈希树</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image76.png" /></td>
-<td>哈希列表：&lt;空&gt;<br/>
-标志位：&lt;空&gt;</td>
-<td>在哈希树中标记目标节点及其祖先</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image77.png" /></td>
-<td>哈希列表：&lt;空&gt;<br/>
-标志位：1</td>
-<td>执行<strong>非交易节点-有标记</strong>：<br/>
-向标志位添加1；<br/>
-分别处理左右节点；<br/>
-不要将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image78.png" /></td>
-<td>哈希列表：H12<br/>
-标志位：1 0</td>
-<td>执行<strong>非交易节点-无标记</strong>：<br/>
-向标志位添加0；<br/>
-将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image79.png" /></td>
-<td>哈希列表：H12<br/>
-标志位：1 0 1</td>
-<td>执行<strong>非交易节点-有标记</strong>：<br/>
-向标志位添加1；<br/>
-分别处理左右节点；<br/>
-不要将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image80.png" /></td>
-<td>哈希列表：H12<br/>
-标志位：1 0 1 1</td>
-<td>执行<strong>非交易节点-有标记</strong>：<br/>
-向标志位添加1；<br/>
-分别处理左右节点；<br/>
-不要将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image81.png" /></td>
-<td>哈希列表：H12 H5<br/>
-标志位：1 0 1 1 1</td>
-<td>执行<strong>交易节点-有标记</strong>：<br/>
-向标志位添加1；<br/>
-将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image82.png" /></td>
-<td>哈希列表：H12 H5 H6<br/>
-标志位：1 0 1 1 1 0</td>
-<td>执行<strong>交易节点-无标记</strong>：<br/>
-向标志位添加0；<br/>
-将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image83.png" /></td>
-<td>哈希列表：H12 H5 H6<br/>
-标志位：1 0 1 1 1 0</td>
-<td>处理完左右节点，回退，但并不将该节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image84.png" /></td>
-<td>哈希列表：H12 H5 H6 H11<br/>
-标志位：1 0 1 1 1 0 0</td>
-<td>执行<strong>非交易节点-无标记</strong>：<br/>
-向标志位添加0；<br/>
-将本节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image85.png" /></td>
-<td>哈希列表：H12 H5 H6 H11<br/>
-标志位：1 0 1 1 1 0 0</td>
-<td>处理完左右节点，回退，但并不将该节点添至哈希列表；</td>
-</tr>
-<tr>
-<td><img src="/section1/_images/3/image86.png" /></td>
-<td>哈希列表：H12 H5 H6 H11<br/>
-标志位：1 0 1 1 1 0 0</td>
-<td>处理完左右节点，回退，但并不将该节点添至哈希列表；</td>
+哈希列表：<br/>
+<span style="white-space: nowrap">{{step.hashList}}</span><br/>
+标志位：<br/>
+{{step.tagList}}</td>
+<td v-html="marked(explains[step.explain])"></td>
 </tr>
 </tbody>
 </table>
+</div>
 
 ```cs
 public class MerkleTree  
@@ -553,4 +471,76 @@ public (UInt256[] hashes, BitArray flags) Trim(Predicate<UInt256> filter)
 }  
 ```
 <!-- code:ClassicBlockChain/Entity/MerkleTree.cs -->
+
+<script>
+  new Vue({
+    el: '#table1',
+    data: { 
+      steps: [
+        { image: 'restruct01.png', hashList: 'H1 H2 H3 H4', tagList: '1 0 1 1 1 0 0', explain: 'init' }, 
+        { image: 'restruct02.png', hashList: 'H1 H2 H3 H4', tagList: '1 0 1 1 1 0 0', explain: 'nontx_tagged', extraExplain: '从根节点开始\n' },
+        { image: 'restruct03.png', hashList: 'H1 H2 H3 H4', tagList: '0 1 1 1 0 0', explain: 'nontx_notag' },
+        { image: 'restruct04.png', hashList: 'H2 H3 H4', tagList: '1 1 0 0', explain: 'nontx_tagged', extraExplain: '回到根节点<br/>继续处理右子节点\n' },
+        { image: 'restruct05.png', hashList: 'H2 H3 H4', tagList: '1 0 0', explain: 'nontx_tagged' },
+        { image: 'restruct06.png', hashList: 'H2 H3 H4', tagList: '0 0', explain: 'tx_tagged' },
+        { image: 'restruct07.png', hashList: 'H3 H4', tagList: '0 0', explain: 'tx_notag' },
+        { image: 'restruct08.png', hashList: 'H4', tagList: '<空>', explain: 'compute' },
+        { image: 'restruct09.png', hashList: 'H4', tagList: '<空>', explain: 'nontx_notag' },
+        { image: 'restruct10.png', hashList: 'H4', tagList: '<空>', explain: 'compute' },
+        { image: 'restruct11.png', hashList: 'H4', tagList: '<空>', explain: 'compute' },
+      ],
+      explains: {
+        init: '根据交易数量初始化树形结构',
+        root: '在哈希树中标记目标节点及其祖先',
+        nontx_tagged: `执行**非交易节点-1**：
+- 先处理左子节点`,
+        nontx_notag: `执行**非交易节点-0**：
+- 提取哈希值；`,
+        tx_tagged: `执行**交易节点-1**：
+- 提取哈希值；
+- 标记为请求的交易；`,
+        tx_notag: `执行**交易节点-0**：
+- 提取哈希值；`,
+        compute: '根据左右子节点计算该节点哈希值'
+      }
+    }
+  });
+  new Vue({
+    el: '#table2',
+    data: { 
+      steps: [
+        { image: 'extract01.png', hashList: '<空>', tagList: '<空>', explain: 'init' },
+        { image: 'extract02.png', hashList: '<空>', tagList: '<空>', explain: 'mark' },
+        { image: 'extract03.png', hashList: '<空>', tagList: '1', explain: 'nontx_tagged' },
+        { image: 'extract04.png', hashList: 'H12', tagList: '1 0', explain: 'nontx_notag' },
+        { image: 'extract05.png', hashList: 'H12', tagList: '1 0 1', explain: 'nontx_tagged' },
+        { image: 'extract06.png', hashList: 'H12', tagList: '1 0 1 1', explain: 'nontx_tagged' },
+        { image: 'extract07.png', hashList: 'H12 H5', tagList: '1 0 1 1 1', explain: 'tx_tagged' },
+        { image: 'extract08.png', hashList: 'H12 H5 H6', tagList: '1 0 1 1 1 0', explain: 'tx_notag' },
+        { image: 'extract09.png', hashList: 'H12 H5 H6', tagList: '1 0 1 1 1 0', explain: 'back' },
+        { image: 'extract10.png', hashList: 'H12 H5 H6 H11', tagList: '1 0 1 1 1 0 0', explain: 'nontx_notag' },
+        { image: 'extract11.png', hashList: 'H12 H5 H6 H11', tagList: '1 0 1 1 1 0 0', explain: 'back' },
+        { image: 'extract12.png', hashList: 'H12 H5 H6 H11', tagList: '1 0 1 1 1 0 0', explain: 'back' },
+      ],
+      explains: {
+        init: '初始化完整哈希树',
+        mark: '在哈希树中标记目标节点及其祖先',
+        nontx_tagged: `执行**非交易节点-有标记**：
+- 向标志位添加1；
+- 分别处理左右节点；
+- 不要将本节点添至哈希列表；`,
+        nontx_notag: `执行**非交易节点-无标记**：
+- 向标志位添加0；
+- 将本节点添至哈希列表；`,
+        tx_tagged: `执行**交易节点-有标记**：
+- 向标志位添加1；
+- 将本节点添至哈希列表；`,
+        tx_notag: `执行**交易节点-无标记**：
+- 向标志位添加0；
+- 将本节点添至哈希列表；`,
+        back: '处理完左右节点，回退，但并不将该节点添至哈希列表；'
+      }
+    }
+  });
+</script>
 
