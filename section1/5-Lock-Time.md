@@ -2,114 +2,59 @@
 
 ## 交易结构
 
-  ------------------------------------------------------
-  public class Transaction : HashBase
-  
-  {
-  
-  private byte version;
-  
-  private TxInput\[\] inputTxs = new TxInput\[\] { };
-  
-  private TxOutput\[\] outputs = new TxOutput\[\] { };
-  
-  private uint lockTime;
-  
-  }
-  ------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Entity\\Transaction.cs
-
-其中，
-
-第3行，
+```cs
+public class Transaction : HashBase
+{
+    private byte version;
+    private TxInput[] inputTxs = new TxInput[] { };
+    private TxOutput[] outputs = new TxOutput[] { };
+    private uint lockTime;
+}
+代码：ClassicBlockChain\Entity\Transaction.cs
+```
+<!-- code:ClassicBlockChain/Entity/Transaction.cs -->
 
 ## 验证交易
 
-  ---------------------------------------------------------------------------------
-  1.  **public** **class** Engine : IDisposable  
+```cs
+public class Engine : IDisposable  
+{  
+    private const uint LockTimeBreakPoint = 1_500_000_000;  
+    private BlockHead GenerateBlock()  
+    {  
+        var finalTxs = this.BlockChain.DequeueTxs()  
+            .Where(this.ValidateTx)  
+            .Where(this.ValidateLockTime)  
+            .ToList();  
+        ...  
+    }  
   
-  2.  {  
-  
-  3.      **private** **const** **uint** LockTimeBreakPoint = 1\_500\_000\_000;  
-  
-  4.      **private** BlockHead GenerateBlock()  
-  
-  5.      {  
-  
-  6.          var finalTxs = **this**.BlockChain.DequeueTxs()  
-  
-  7.              .Where(**this**.ValidateTx)  
-  
-  8.              .Where(**this**.ValidateLockTime)  
-  
-  9.              .ToList();  
-  
-  10.         ...  
-  
-  11.     }  
-  
-  12.   
-  
-  13.     **private** **bool** ValidateLockTime(Transaction tx)  
-  
-  14. }  
-  
-  ---------------------------------------------------------------------------------
+    private bool ValidateLockTime(Transaction tx)  
+}  
+```
+<!-- code:ClassicBlockChain/Core/Engine.cs -->
 
-参考代码：ClassicBlockChain\\Core\\Engine.cs
-
-其中，
-
-第3行，
-
-  ------------------------------------------------------------------------------------
-  1.  **private** **bool** ValidateLockTime(Transaction tx)  
+```cs
+private bool ValidateLockTime(Transaction tx)  
+{  
+    return tx.InputTxs  
+        .Select(_ => this.BlockChain.GetTx(_.PrevTxHash))  
+        .All(_ => this.ValidateLockTime(_.LockTime, DateTime.Now));  
+}  
   
-  2.  {  
-  
-  3.      **return** tx.InputTxs  
-  
-  4.          .Select(\_ =&gt; **this**.BlockChain.GetTx(\_.PrevTxHash))  
-  
-  5.          .All(\_ =&gt; **this**.ValidateLockTime(\_.LockTime, DateTime.Now));  
-  
-  6.  }  
-  
-  7.    
-  
-  8.  **private** **bool** ValidateLockTime(**uint** lockTime, DateTime time)  
-  
-  9.  {  
-  
-  10.     **if** (lockTime == 0) **return** **true**;  
-  
-  11.     **if** (lockTime &gt; LockTimeBreakPoint)  
-  
-  12.     {  
-  
-  13.         var lockdt = DateTimeOffset.FromUnixTimeSeconds(lockTime);  
-  
-  14.         **return** lockdt &gt; time;  
-  
-  15.     }  
-  
-  16.     **else**  
-  
-  17.     {  
-  
-  18.         **return** **this**.BlockChain.Height &gt; lockTime;  
-  
-  19.     }  
-  
-  20. }  
-  
-  ------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Core\\Engine.cs
-
-其中，
-
-第3行，
-
+private bool ValidateLockTime(uint lockTime, DateTime time)  
+{  
+    if (lockTime == 0) return true;  
+    if (lockTime > LockTimeBreakPoint)  
+    {  
+        var lockdt = DateTimeOffset.FromUnixTimeSeconds(lockTime);  
+        return lockdt > time;  
+    }  
+    else  
+    {  
+        return this.BlockChain.Height > lockTime;  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Core/Engine.cs -->
 

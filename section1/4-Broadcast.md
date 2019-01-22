@@ -2,335 +2,167 @@
 
 ## 主动广播信息
 
-  ----------------------------------------------------------------------------
-  1.  **private** **void** Broadcast(CommandBase command)  
-  
-  2.  {  
-  
-  3.      ConnectionNode\[\] internalnodes;  
-  
-  4.      **lock** (**this**.nodes)  
-  
-  5.      {  
-  
-  6.          internalnodes = **this**.nodes  
-  
-  7.              .Where(\_ =&gt; \_.Status == ConnectionStatus.Connected)  
-  
-  8.              .ToArray();  
-  
-  9.      }  
-  
-  10.     **foreach** (var node **in** internalnodes)  
-  
-  11.     {  
-  
-  12.         node.Peer.Send(command);  
-  
-  13.     }  
-  
-  14. }  
-  
-  ----------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
-
-其中，
-
-第3行，
+```cs
+private void Broadcast(CommandBase command)  
+{  
+    ConnectionNode[] internalnodes;  
+    lock (this.nodes)  
+    {  
+        internalnodes = this.nodes  
+            .Where(_ => _.Status == ConnectionStatus.Connected)  
+            .ToArray();  
+    }  
+    foreach (var node in internalnodes)  
+    {  
+        node.Peer.Send(command);  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
 ## 广播区块
 
-  ------------------------------------------------------------------------------------------
-  1.  **public** **class** ConnectionPool : IDisposable  
+```cs
+public class ConnectionPool : IDisposable  
+{  
+    public ConnectionPool(...)  
+    {  
+        ...  
+        this.selfNode.Engine.OnNewBlockCreated += Engine_OnNewBlockCreated;  
+    }  
   
-  2.  {  
-  
-  3.      **public** ConnectionPool(...)  
-  
-  4.      {  
-  
-  5.          ...  
-  
-  6.          **this**.selfNode.Engine.OnNewBlockCreated += Engine\_OnNewBlockCreated;  
-  
-  7.      }  
-  
-  8.    
-  
-  9.      **private** **void** Engine\_OnNewBlockCreated(**object** sender, BlockHead e)  
-  
-  10.     {  
-  
-  11.         var blk = **this**.selfNode.Engine.BlockChain.GetBlock(e.Hash);  
-  
-  12.         **this**.Broadcast(**new** BlockCommand { Block = blk });  
-  
-  13.     }  
-  
-  14. }  
-  
-  ------------------------------------------------------------------------------------------
+    private void Engine_OnNewBlockCreated(object sender, BlockHead e)  
+    {  
+        var blk = this.selfNode.Engine.BlockChain.GetBlock(e.Hash);  
+        this.Broadcast(new BlockCommand { Block = blk });  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
+```cs
+public class BlockCommand : CommandBase  
+{  
+    public Block Block { get; set; }  
+  
+    public override void OnReceived(Node node, ConnectionNode connectionNode)  
+    {  
+        var engine = node.Engine;  
+        var bc = engine.BlockChain;  
+        if (bc.BlockHeadDictionary.ContainsKey(this.Block.Hash)) return;  
+        bc.AddSyncBlock(this.Block);  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/BlockCommand.cs -->
 
-其中，
-
-第3行，
-
-  -------------------------------------------------------------------------------------------------
-  1.  **public** **class** BlockCommand : CommandBase  
+```cs
+internal void AddSyncBlock(Block block)  
+{  
+    CacheBlock(block);  
+    // just cache block if prevous block not exist  
+    if (!this.BlockHeadDictionary.ContainsKey(block.Head.PreviousBlockHash)) return;  
+    if (this.TryMoveSyncTail(block.Head))  
+    {  
+        this.cancelSearchNonce = true;  
+    }  
+}  
   
-  2.  {  
+private void CacheBlock(Block block)  
+{  
+    this.BlockDictionary[block.Hash] = block;  
+    this.InitBlocks(block.Head);  
+}  
   
-  3.      **public** Block Block { **get**; **set**; }  
+private bool TryMoveSyncTail(BlockHead newTail)  
+{  
+    var listnow = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, this.Tail.Hash).ToArray();  
+    var listnew = this.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, newTail.Hash).ToArray();  
+    // broken chain should not count  
+    if (listnew.LastOrDefault()?.Hash != GenesisBlockHead.Hash) return false;  
+    var cnow = listnow.Length;  
+    var cnew = listnew.Length;  
+    if (cnew > cnow)  
+    {  
+        MaintainBlockChain(newTail);  
+        return true;  
+    }  
   
-  4.    
-  
-  5.      **public** **override** **void** OnReceived(Node node, ConnectionNode connectionNode)  
-  
-  6.      {  
-  
-  7.          var engine = node.Engine;  
-  
-  8.          var bc = engine.BlockChain;  
-  
-  9.          **if** (bc.BlockHeadDictionary.ContainsKey(**this**.Block.Hash)) **return**;  
-  
-  10.         bc.AddSyncBlock(**this**.Block);  
-  
-  11.     }  
-  
-  12. }  
-  
-  -------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\BlockCommand.cs
-
-其中，
-
-第3行，
-
-  -------------------------------------------------------------------------------------------------------------------
-  1.  **internal** **void** AddSyncBlock(Block block)  
-  
-  2.  {  
-  
-  3.      CacheBlock(block);  
-  
-  4.      // just cache block if prevous block not exist  
-  
-  5.      **if** (!**this**.BlockHeadDictionary.ContainsKey(block.Head.PreviousBlockHash)) **return**;  
-  
-  6.      **if** (**this**.TryMoveSyncTail(block.Head))  
-  
-  7.      {  
-  
-  8.          **this**.cancelSearchNonce = **true**;  
-  
-  9.      }  
-  
-  10. }  
-  
-  11.   
-  
-  12. **private** **void** CacheBlock(Block block)  
-  
-  13. {  
-  
-  14.     **this**.BlockDictionary\[block.Hash\] = block;  
-  
-  15.     **this**.InitBlocks(block.Head);  
-  
-  16. }  
-  
-  17.   
-  
-  18. **private** **bool** TryMoveSyncTail(BlockHead newTail)  
-  
-  19. {  
-  
-  20.     var listnow = **this**.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, **this**.Tail.Hash).ToArray();  
-  
-  21.     var listnew = **this**.ReverseIterateBlockHeaders(GenesisBlockHead.Hash, newTail.Hash).ToArray();  
-  
-  22.     // broken chain should not count  
-  
-  23.     **if** (listnew.LastOrDefault()?.Hash != GenesisBlockHead.Hash) **return** **false**;  
-  
-  24.     var cnow = listnow.Length;  
-  
-  25.     var cnew = listnew.Length;  
-  
-  26.     **if** (cnew &gt; cnow)  
-  
-  27.     {  
-  
-  28.         MaintainBlockChain(newTail);  
-  
-  29.         **return** **true**;  
-  
-  30.     }  
-  
-  31.   
-  
-  32.     **return** **false**;  
-  
-  33. }  
-  
-  -------------------------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Core\\BlockChain.cs
-
-其中，
-
-第3行，
+    return false;  
+}  
+```
+<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
 
 ## 广播交易
 
-  -----------------------------------------------------------------------------------------
-  1.  **public** **class** ConnectionPool : IDisposable  
+```cs
+public class ConnectionPool : IDisposable  
+{  
+    public ConnectionPool(...)  
+    {  
+        ...  
+        this.selfNode.Engine.OnNewTxCreated += Engine_OnNewTxCreated;  
+    }  
   
-  2.  {  
-  
-  3.      **public** ConnectionPool(...)  
-  
-  4.      {  
-  
-  5.          ...  
-  
-  6.          **this**.selfNode.Engine.OnNewTxCreated += Engine\_OnNewTxCreated;  
-  
-  7.      }  
-  
-  8.    
-  
-  9.      **private** **void** Engine\_OnNewTxCreated(**object** sender, Transaction e)  
-  
-  10.     {  
-  
-  11.         **this**.Broadcast(**new** TransactionCommand { Transaction = e });  
-  
-  12.     }  
-  
-  13. }  
-  
-  -----------------------------------------------------------------------------------------
+    private void Engine_OnNewTxCreated(object sender, Transaction e)  
+    {  
+        this.Broadcast(new TransactionCommand { Transaction = e });  
+    }  13.	}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
+```cs
+public class TransactionCommand : CommandBase  
+{  
+    public Transaction Transaction { get; set; }  
+    public override void OnReceived(Node node, ConnectionNode connectionNode)  
+    {  
+        var bc = node.Engine.BlockChain;  
+        bc.SyncTx(this.Transaction);  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/TransactionCommand.cs -->
 
-其中，
+```cs
+internal void SyncTx(Transaction tx)  
+{  
+    this.TxQueue.Enqueue(tx);  
+}  
+```
+<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
 
-第3行，
+##	广播清单
 
-  -------------------------------------------------------------------------------------------------
-  1.  **public** **class** TransactionCommand : CommandBase  
-  
-  2.  {  
-  
-  3.      **public** Transaction Transaction { **get**; **set**; }  
-  
-  4.      **public** **override** **void** OnReceived(Node node, ConnectionNode connectionNode)  
-  
-  5.      {  
-  
-  6.          var bc = node.Engine.BlockChain;  
-  
-  7.          bc.SyncTx(**this**.Transaction);  
-  
-  8.      }  
-  
-  9.  }  
-  
-  -------------------------------------------------------------------------------------------------
+```cs
+public enum InventoryType  
+{  
+    Transaction,  
+    Block,  
+}  
+代码：ClassicBlockChain\Network\RpcCommands\InventoryEntity.cs
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/InventoryEntity.cs -->
 
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\TransactionCommand.cs
+```cs
+public class InventoryEntity  
+{  
+    public InventoryType Type { get; set; }  
+    public UInt256 Hash { get; set; }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/InventoryEntity.cs -->
 
-其中，
-
-第3行，
-
-  ----------------------------------------------------
-  1.  **internal** **void** SyncTx(Transaction tx)  
-  
-  2.  {  
-  
-  3.      **this**.TxQueue.Enqueue(tx);  
-  
-  4.  }  
-  
-  ----------------------------------------------------
-
-参考代码：ClassicBlockChain\\Core\\BlockChain.cs
-
-其中，
-
-第3行，
-
-## 广播清单
-
-  -----------------------------------------
-  1.  **public** **enum** InventoryType  
-  
-  2.  {  
-  
-  3.      Transaction,  
-  
-  4.      Block,  
-  
-  5.  }  
-  
-  -----------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\InventoryEntity.cs
-
-其中，
-
-第3行，
-
-  ---------------------------------------------------------------
-  1.  **public** **class** InventoryEntity  
-  
-  2.  {  
-  
-  3.      **public** InventoryType Type { **get**; **set**; }  
-  
-  4.      **public** UInt256 Hash { **get**; **set**; }  
-  
-  5.  }  
-  
-  ---------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\InventoryEntity.cs
-
-其中，
-
-第3行，
-
-  -------------------------------------------------------------------------------------------------
-  1.  **public** **class** InventoryCommand : CommandBase  
-  
-  2.  {  
-  
-  3.      **public** InventoryEntity\[\] Items { **get**; **set**; }  
-  
-  4.      **public** **override** **void** OnReceived(Node node, ConnectionNode connectionNode)  
-  
-  5.      {  
-  
-  6.          var responseCmd = **new** GetDataCommand { Items = **this**.Items };  
-  
-  7.          connectionNode.Peer.Send(responseCmd);  
-  
-  8.      }  
-  
-  9.  }  
-  
-  -------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\InventoryCommand.cs
-
-其中，
-
-第3行，
+```cs
+public class InventoryCommand : CommandBase  
+{  
+    public InventoryEntity[] Items { get; set; }  
+    public override void OnReceived(Node node, ConnectionNode connectionNode)  
+    {  
+        var responseCmd = new GetDataCommand { Items = this.Items };  
+        connectionNode.Peer.Send(responseCmd);  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/InventoryCommand.cs -->
 

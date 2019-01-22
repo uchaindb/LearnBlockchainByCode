@@ -2,530 +2,262 @@
 
 ## 节点管理
 
-  -----------------------------------------------------------------------------------------------------------------------------------------------
-  1.  **public** **class** Node : IDisposable  
+```cs
+public class Node : IDisposable  
+{  
+    private readonly IListener listener;  
+    private readonly NodeOptions options;  
+    private readonly IPeerFactory peerFactory;  
   
-  2.  {  
+    public Node(IWallet miner, IListener listener, IPeerFactory peerFactory, NodeOptions options = null)  
+    {  
+        this.Engine = new Engine(miner);  
+        this.options = options ?? new NodeOptions();  
   
-  3.      **private** **readonly** IListener listener;  
+        this.listener = listener;  
+        this.listener.Start();  
+        this.peerFactory = peerFactory;  
+        this.ConnPool = new ConnectionPool(this, this.options.WellKnownNodes, this.peerFactory, this.listener);  
+        this.ConnPool.Start();  
+    }  
   
-  4.      **private** **readonly** NodeOptions options;  
+    public Engine Engine { get; }  
+    public ConnectionPool ConnPool { get; }  
   
-  5.      **private** **readonly** IPeerFactory peerFactory;  
-  
-  6.    
-  
-  7.      **public** Node(IWallet miner, IListener listener, IPeerFactory peerFactory, NodeOptions options = **null**)  
-  
-  8.      {  
-  
-  9.          **this**.Engine = **new** Engine(miner);  
-  
-  10.         **this**.options = options ?? **new** NodeOptions();  
-  
-  11.   
-  
-  12.         **this**.listener = listener;  
-  
-  13.         **this**.listener.Start();  
-  
-  14.         **this**.peerFactory = peerFactory;  
-  
-  15.         **this**.ConnPool = **new** ConnectionPool(**this**, **this**.options.WellKnownNodes, **this**.peerFactory, **this**.listener);  
-  
-  16.         **this**.ConnPool.Start();  
-  
-  17.     }  
-  
-  18.   
-  
-  19.     **public** Engine Engine { **get**; }  
-  
-  20.     **public** ConnectionPool ConnPool { **get**; }  
-  
-  21.   
-  
-  22.     **public** **void** Dispose()  
-  
-  23.     {  
-  
-  24.         **this**.Engine?.Dispose();  
-  
-  25.         **this**.listener.Dispose();  
-  
-  26.         **this**.ConnPool.Dispose();  
-  
-  27.         **this**.peerFactory.Dispose();  
-  
-  28.     }  
-  
-  29. }  
-  
-  -----------------------------------------------------------------------------------------------------------------------------------------------
+    public void Dispose()  
+    {  
+        this.Engine?.Dispose();  
+        this.listener.Dispose();  
+        this.ConnPool.Dispose();  
+        this.peerFactory.Dispose();  
+    }
+}  
+```
+<!-- code:ClassicBlockChain/Core/Node.cs -->
 
-参考代码：ClassicBlockChain\\Core\\Node.cs
-
-其中，
-
-第3行，
-
-  --------------------------------------------------------------------------
-  1.  **public** **class** NodeOptions  
-  
-  2.  {  
-  
-  3.      **public** **string**\[\] WellKnownNodes { **get**; **set**; }  
-  
-  4.  }  
-  
-  --------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Entity\\NodeOptions.cs
-
-其中，
-
-第3行，
+```cs
+public class NodeOptions  
+{  
+    public string[] WellKnownNodes { get; set; }  
+}  
+```
+<!-- code:ClassicBlockChain/Entity/NodeOptions.cs -->
 
 ## 连接管理
 
-  --------------------------------------------
-  1.  **public** **enum** ConnectionStatus  
-  
-  2.  {  
-  
-  3.      Initial,  
-  
-  4.      Connected,  
-  
-  5.      Disconnected,  
-  
-  6.      Dead,  
-  
-  7.  }  
-  
-  --------------------------------------------
+```cs
+public enum ConnectionStatus  
+{  
+    Initial,  
+    Connected,  
+    Disconnected,  
+    Dead,  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionNode.cs -->
 
-参考代码：ClassicBlockChain\\Network\\ConnectionNode.cs
+```cs
+public class ConnectionNode  
+{  
+    public string Address { get; set; }  
+    public ConnectionStatus Status { get; set; }  
+    public IPeer Peer { get; set; }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionNode.cs -->
 
-其中，
+```cs
+public class ConnectionPool : IDisposable  
+{  
+    private readonly List<ConnectionNode> nodes;  
+    private readonly Node selfNode;  
+    private readonly IPeerFactory peerFactory;  
+    private readonly IListener listener;  
+    public ConnectionPool(Node node, string[] wellKnowns, IPeerFactory peerFactory, IListener listener)  
+    {  
+        this.selfNode = node;  
+        this.nodes = wellKnowns  
+            .Where(_ => _ != listener.Address)  
+            .Select(_ => new ConnectionNode(_))  
+            .ToList();  
+        this.peerFactory = peerFactory;  
+        this.listener = listener;  
+    }  
+  
+    public void Start()  
+    public void Dispose()  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
-第3行，
-
-  --------------------------------------------------------------------
-  1.  **public** **class** ConnectionNode  
+```cs
+public class ConnectionPool : IDisposable  
+{  
+    private bool isReceiving = false;  
+    private Thread thReceive;  
+    public event EventHandler<CommandBase> OnCommandReceived;  
   
-  2.  {  
+    public void Start()  
+    {  
+        this.thReceive = new Thread(Receive);  
+        this.thReceive.Start();  
+        this.isReceiving = true;  
+    }  
   
-  3.      **public** **string** Address { **get**; **set**; }  
+    private void Receive()  
+    {  
+        while (this.isReceiving)  
+        {  
+            ConnectionNode[] internalnodes;  
+            lock (this.nodes)  
+            {  
+                internalnodes = this.nodes.ToArray();  
+            }  
+            foreach (var node in internalnodes)  
+            {  
+                if (node.Peer == null) continue;  
+                var command = node.Peer.Receive();  
+                if (command == null) continue;  
+                OnCommandReceived?.Invoke(this, command);  
+                command.OnReceived(this.selfNode, node);  
+                if (!this.isReceiving) break;  
+            }  
   
-  4.      **public** ConnectionStatus Status { **get**; **set**; }  
-  
-  5.      **public** IPeer Peer { **get**; **set**; }  
-  
-  6.  }  
-  
-  --------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\ConnectionNode.cs
-
-其中，
-
-第3行，
-
-  -------------------------------------------------------------------------------------------------------------------------
-  1.  **public** **class** ConnectionPool : IDisposable  
-  
-  2.  {  
-  
-  3.      **private** **readonly** List&lt;ConnectionNode&gt; nodes;  
-  
-  4.      **private** **readonly** Node selfNode;  
-  
-  5.      **private** **readonly** IPeerFactory peerFactory;  
-  
-  6.      **private** **readonly** IListener listener;  
-  
-  7.      **public** ConnectionPool(Node node, **string**\[\] wellKnowns, IPeerFactory peerFactory, IListener listener)  
-  
-  8.      {  
-  
-  9.          **this**.selfNode = node;  
-  
-  10.         **this**.nodes = wellKnowns  
-  
-  11.             .Where(\_ =&gt; \_ != listener.Address)  
-  
-  12.             .Select(\_ =&gt; **new** ConnectionNode(\_))  
-  
-  13.             .ToList();  
-  
-  14.         **this**.peerFactory = peerFactory;  
-  
-  15.         **this**.listener = listener;  
-  
-  16.     }  
-  
-  17.   
-  
-  18.     **public** **void** Start()  
-  
-  19.     **public** **void** Dispose()  
-  
-  20. }  
-  
-  -------------------------------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
-
-其中，
-
-第3行，
-
-  -----------------------------------------------------------------------------------
-  1.  **public** **class** ConnectionPool : IDisposable  
-  
-  2.  {  
-  
-  3.      **private** **bool** isReceiving = **false**;  
-  
-  4.      **private** Thread thReceive;  
-  
-  5.      **public** **event** EventHandler&lt;CommandBase&gt; OnCommandReceived;  
-  
-  6.    
-  
-  7.      **public** **void** Start()  
-  
-  8.      {  
-  
-  9.          **this**.thReceive = **new** Thread(Receive);  
-  
-  10.         **this**.thReceive.Start();  
-  
-  11.         **this**.isReceiving = **true**;  
-  
-  12.     }  
-  
-  13.   
-  
-  14.     **private** **void** Receive()  
-  
-  15.     {  
-  
-  16.         **while** (**this**.isReceiving)  
-  
-  17.         {  
-  
-  18.             ConnectionNode\[\] internalnodes;  
-  
-  19.             **lock** (**this**.nodes)  
-  
-  20.             {  
-  
-  21.                 internalnodes = **this**.nodes.ToArray();  
-  
-  22.             }  
-  
-  23.             **foreach** (var node **in** internalnodes)  
-  
-  24.             {  
-  
-  25.                 **if** (node.Peer == **null**) **continue**;  
-  
-  26.                 var command = node.Peer.Receive();  
-  
-  27.                 **if** (command == **null**) **continue**;  
-  
-  28.                 OnCommandReceived?.Invoke(**this**, command);  
-  
-  29.                 command.OnReceived(**this**.selfNode, node);  
-  
-  30.                 **if** (!**this**.isReceiving) **break**;  
-  
-  31.             }  
-  
-  32.   
-  
-  33.             Thread.Sleep(500);  
-  
-  34.         }  
-  
-  35.     }  
-  
-  36. }  
-  
-  -----------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
-
-其中，
-
-第3行，
+            Thread.Sleep(500);  
+        }  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
 ## 节点连接
+```cs
+public class ConnectionPool : IDisposable  
+{  
+    private Timer reconnectTimer;  
+  
+    public void Start()  
+    {  
+        ...  
+        this.reconnectTimer = new Timer((_) => this.ConnectAll(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));  
+    }  
+  
+    private void ConnectAll()  
+    {  
+        ConnectionNode[] internalnodes;  
+        lock (this.nodes)  
+        {  
+            internalnodes = this.nodes  
+                .Where(_ => _.Status == ConnectionStatus.Initial || _.Status == ConnectionStatus.Dead)  
+                .Where(_ => _.Address != null)  
+                .ToArray();  
+        }  
+        foreach (var node in internalnodes)  
+        {  
+            this.TryConnect(node);  
+        }  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
-  -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  1.  **public** **class** ConnectionPool : IDisposable  
+```cs
+public class ConnectionPool : IDisposable  
+{  
+    private Timer reconnectTimer;  
   
-  2.  {  
+    public void Start()  
+    {  
+        ...  
+        this.reconnectTimer = new Timer((_) => this.ConnectAll(), null, new TimeSpan(0, 0, 0, 0, 100), new TimeSpan(0, 0, 20));  
+    }  
   
-  3.      **private** Timer reconnectTimer;  
-  
-  4.    
-  
-  5.      **public** **void** Start()  
-  
-  6.      {  
-  
-  7.          ...  
-  
-  8.          **this**.reconnectTimer = **new** Timer((\_) =&gt; **this**.ConnectAll(), **null**, **new** TimeSpan(0, 0, 0, 0, 100), **new** TimeSpan(0, 0, 20));  
-  
-  9.      }  
-  
-  10.   
-  
-  11.     **private** **void** ConnectAll()  
-  
-  12.     {  
-  
-  13.         ConnectionNode\[\] internalnodes;  
-  
-  14.         **lock** (**this**.nodes)  
-  
-  15.         {  
-  
-  16.             internalnodes = **this**.nodes  
-  
-  17.                 .Where(\_ =&gt; \_.Status == ConnectionStatus.Initial || \_.Status == ConnectionStatus.Dead)  
-  
-  18.                 .Where(\_ =&gt; \_.Address != **null**)  
-  
-  19.                 .ToArray();  
-  
-  20.         }  
-  
-  21.         **foreach** (var node **in** internalnodes)  
-  
-  22.         {  
-  
-  23.             **this**.TryConnect(node);  
-  
-  24.         }  
-  
-  25.     }  
-  
-  26. }  
-  
-  -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    private void ConnectAll()  
+    {  
+        ConnectionNode[] internalnodes;  
+        lock (this.nodes)  
+        {  
+            internalnodes = this.nodes  
+                .Where(_ => _.Status == ConnectionStatus.Initial || _.Status == ConnectionStatus.Dead)  
+                .Where(_ => _.Address != null)  
+                .ToArray();  
+        }  
+        foreach (var node in internalnodes)  
+        {  
+            this.TryConnect(node);  
+        }  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
+```cs
+private void TryConnect(ConnectionNode node)  
+{  
+    if (node.Peer != null)  
+    {  
+        node.Peer.Dispose();  
+        node.Peer = null;  
+    }  
+  
+    var peer = this.peerFactory.Produce();  
+    try  
+    {  
+        peer.Connect(node.Address);  
+        node.Peer = peer;  
+    }  
+    catch (Exception)  
+    {  
+        node.Status = ConnectionStatus.Dead;  
+    }  
+  
+    if (!peer.IsConnected)  
+    {  
+        Debug.WriteLine("open peer channel failed");  
+        node.Status = ConnectionStatus.Dead;  
+        return;  
+    }  
+  
+    try  
+    {  
+        peer.Send(new VersionCommand());  
+    }  
+    catch (Exception)  
+    {  
+        node.Status = ConnectionStatus.Dead;  
+    }  
+    finally  
+    {  
+        if (node.Status != ConnectionStatus.Connected)  
+        {  
+            peer.Close();  
+            peer.Dispose();  
+        }  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/ConnectionPool.cs -->
 
-其中，
+```cs
+public class VersionCommand : CommandBase  
+{  
+    public override void OnReceived(Node node, ConnectionNode connectionNode)  
+    {  
+        connectionNode.Status = ConnectionStatus.Connected;  
+        connectionNode.Peer.Send(new VersionAcknowledgeCommand());  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/VersionCommand.cs -->
 
-第3行，
-
-  -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  1.  **public** **class** ConnectionPool : IDisposable  
-  
-  2.  {  
-  
-  3.      **private** Timer reconnectTimer;  
-  
-  4.    
-  
-  5.      **public** **void** Start()  
-  
-  6.      {  
-  
-  7.          ...  
-  
-  8.          **this**.reconnectTimer = **new** Timer((\_) =&gt; **this**.ConnectAll(), **null**, **new** TimeSpan(0, 0, 0, 0, 100), **new** TimeSpan(0, 0, 20));  
-  
-  9.      }  
-  
-  10.   
-  
-  11.     **private** **void** ConnectAll()  
-  
-  12.     {  
-  
-  13.         ConnectionNode\[\] internalnodes;  
-  
-  14.         **lock** (**this**.nodes)  
-  
-  15.         {  
-  
-  16.             internalnodes = **this**.nodes  
-  
-  17.                 .Where(\_ =&gt; \_.Status == ConnectionStatus.Initial || \_.Status == ConnectionStatus.Dead)  
-  
-  18.                 .Where(\_ =&gt; \_.Address != **null**)  
-  
-  19.                 .ToArray();  
-  
-  20.         }  
-  
-  21.         **foreach** (var node **in** internalnodes)  
-  
-  22.         {  
-  
-  23.             **this**.TryConnect(node);  
-  
-  24.         }  
-  
-  25.     }  
-  
-  26. }  
-  
-  -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
-
-其中，
-
-第3行，
-
-  ------------------------------------------------------------------
-  1.  **private** **void** TryConnect(ConnectionNode node)  
-  
-  2.  {  
-  
-  3.      **if** (node.Peer != **null**)  
-  
-  4.      {  
-  
-  5.          node.Peer.Dispose();  
-  
-  6.          node.Peer = **null**;  
-  
-  7.      }  
-  
-  8.    
-  
-  9.      var peer = **this**.peerFactory.Produce();  
-  
-  10.     **try**  
-  
-  11.     {  
-  
-  12.         peer.Connect(node.Address);  
-  
-  13.         node.Peer = peer;  
-  
-  14.     }  
-  
-  15.     **catch** (Exception)  
-  
-  16.     {  
-  
-  17.         node.Status = ConnectionStatus.Dead;  
-  
-  18.     }  
-  
-  19.   
-  
-  20.     **if** (!peer.IsConnected)  
-  
-  21.     {  
-  
-  22.         Debug.WriteLine("open peer channel failed");  
-  
-  23.         node.Status = ConnectionStatus.Dead;  
-  
-  24.         **return**;  
-  
-  25.     }  
-  
-  26.   
-  
-  27.     **try**  
-  
-  28.     {  
-  
-  29.         peer.Send(**new** VersionCommand());  
-  
-  30.     }  
-  
-  31.     **catch** (Exception)  
-  
-  32.     {  
-  
-  33.         node.Status = ConnectionStatus.Dead;  
-  
-  34.     }  
-  
-  35.     **finally**  
-  
-  36.     {  
-  
-  37.         **if** (node.Status != ConnectionStatus.Connected)  
-  
-  38.         {  
-  
-  39.             peer.Close();  
-  
-  40.             peer.Dispose();  
-  
-  41.         }  
-  
-  42.     }  
-  
-  43. }  
-  
-  ------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\ConnectionPool.cs
-
-其中，
-
-第3行，
-
-  -------------------------------------------------------------------------------------------------
-  1.  **public** **class** VersionCommand : CommandBase  
-  
-  2.  {  
-  
-  3.      **public** **override** **void** OnReceived(Node node, ConnectionNode connectionNode)  
-  
-  4.      {  
-  
-  5.          connectionNode.Status = ConnectionStatus.Connected;  
-  
-  6.          connectionNode.Peer.Send(**new** VersionAcknowledgeCommand());  
-  
-  7.      }  
-  
-  8.  }  
-  
-  -------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\VersionCommand.cs
-
-其中，
-
-第3行，
-
-  -------------------------------------------------------------------------------------------------
-  1.  **public** **class** VersionAcknowledgeCommand : CommandBase  
-  
-  2.  {  
-  
-  3.      **public** **override** **void** OnReceived(Node node, ConnectionNode connectionNode)  
-  
-  4.      {  
-  
-  5.          connectionNode.Status = ConnectionStatus.Connected;  
-  
-  6.      }  
-  
-  7.  }  
-  
-  -------------------------------------------------------------------------------------------------
-
-参考代码：ClassicBlockChain\\Network\\RpcCommands\\VersionAcknowledgeCommand.cs
-
-其中，
-
-第3行，
+```cs
+public class VersionAcknowledgeCommand : CommandBase  
+{  
+    public override void OnReceived(Node node, ConnectionNode connectionNode)  
+    {  
+        connectionNode.Status = ConnectionStatus.Connected;  
+    }  
+}  
+```
+<!-- code:ClassicBlockChain/Network/RpcCommands/VersionAcknowledgeCommand.cs -->
 
