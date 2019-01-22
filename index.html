@@ -18,7 +18,6 @@
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
   <script src="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <!-- <script src="//unpkg.com/docsify&#45;plugin&#45;codefund/index.js"></script> -->
   <style>
     nav.app-nav li ul {
       min-width: 100px;
@@ -54,7 +53,6 @@
             if (lang === "cs") {
               return this.origin.code.apply(this, [code, "csharp"]);
             }
-            console.log(this.origin, arguments, this);
             return this.origin.code.apply(this, arguments);
           }
         }
@@ -105,24 +103,12 @@
         function (hook, vm) {
           hook.beforeEach(function (html) {
             return html.replace(/<!-- code:(.*) -->/g, "?> 参考代码：[$1](https://github.com/uchaindb/LearnBlockchainByCode/blob/master/$1)");
-            // var pattern = /<!-- code:(.*) -->/g;
-            // var match = pattern.exec(html); 
           })
         },
-        // function (hook, vm) {
-        //   hook.beforeEach(function (html) {
-        //     return html.replace(/```cs\s/g, "```csharp");
-        //   })
-        // },
         function (hook, vm) {
           hook.beforeEach(function (html) {
             return html.replace(/\^(.+?)\^(?!(.*end-inline-katex))/g, "<sup>$1</sup>");
           })
-        // },
-        // function (hook, vm) { 
-        //   hook.mounted(function() {
-        //     // Called after initial completion. Only trigger once, no arguments.
-        //   })
         }
       ]
     }
@@ -131,8 +117,6 @@
   <script src="//unpkg.com/vue/dist/vue.min.js"></script>
   <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
   <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
-  <!-- <script src="//unpkg.com/prismjs/components/prism&#45;bash.min.js"></script> -->
-  <!-- <script src="//unpkg.com/prismjs/components/prism&#45;markdown.min.js"></script> -->
   <script src="//unpkg.com/prismjs/components/prism-csharp.min.js"></script>
   <script src="//unpkg.com/docsify-copy-code@2"></script>
   
