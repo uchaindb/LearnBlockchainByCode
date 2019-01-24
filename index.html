@@ -38,6 +38,13 @@
 <body>
   <div id="app">Loading ...</div>
   <script>
+    var glossary = [
+      { 
+        name: '哈希',
+        detail: 'Hash',
+        ref: '#/section1/1-Overview'
+      },
+    ];
     var num = 0;
     mermaid.initialize({ startOnLoad: false });
 
@@ -108,6 +115,15 @@
         function (hook, vm) {
           hook.beforeEach(function (html) {
             return html.replace(/\^(.+?)\^(?!(.*end-(block|inline)-katex))/g, "<sup>$1</sup>");
+          })
+        },
+        function (hook, vm) {
+          hook.beforeEach(function (html) {
+            for (var i = 0, len = glossary.length; i < len; i++) {
+              var re = new RegExp('`' + glossary[i].name + '`', 'g');
+              html = html.replace(re, `<abbr title="${glossary[i].detail}">${glossary[i].name}</abbr>`);
+            }
+            return html;
           })
         }
       ]
