@@ -164,13 +164,13 @@ sequenceDiagram
 蓝色的方块是需要从全节点传回以便在轻量客户端重建部分哈希树所需要的节点，
 而橙色方块是可由轻量客户端自行计算出来的节点，而且为了验证交易的正确性必须进行计算的节点。
 
-TODO: image
+![](_images/3/partial-tree-1.png)
 
 后续内容在描述算法时，对哈希树上的节点进行了简单分类，如下图，在树形结构最下方一排的节点，
 即直接从交易信息算出哈希值的节点被成为交易节点，除此之外的所有节点均被称之为非交易节点，
 因为这些节点的哈希值均是通过计算得出的。
 
-TODO: image
+![](_images/3/partial-tree-2.png)
 
 虽然从系统运行的顺序看，应该显示抽取部分哈希树，再是重建部分哈希树，
 但后续章节先讲重建部分哈希树，使得读者可以先感受一下从哈希列表和标志位重建部分哈希树的全过程，
@@ -216,12 +216,12 @@ TODO: image
 
 考虑到该部分难度较大，这里选取了一个实例进行演示运算过程。该过程一步一步的演示了从空白的哈希树重建出部分哈希树，最终证明该哈希存在于该哈希树。
 
-| 图例                                           |
-| ---                                            |
-| ![](_images/3/image62.png)等待子节点的计算     |
-| ![](_images/3/image62.png)已计算出哈希值       |
-| ![](_images/3/image62.png)从列表中选取了哈希值 |
-| ![](_images/3/image62.png)目标的交易           |
+| 图例                                                     |
+| ---                                                      |
+| ![](_images/3/restruct-legend-1.png)等待子节点的计算     |
+| ![](_images/3/restruct-legend-2.png)已计算出哈希值       |
+| ![](_images/3/restruct-legend-3.png)从列表中选取了哈希值 |
+| ![](_images/3/restruct-legend-4.png)目标的交易           |
 
 <div id="table1">
 <table>
@@ -376,12 +376,12 @@ public static UInt256 GetPartialTreeRootHash(int txNumber, UInt256[] hashes, Bit
 以下同样选取了和前一节同样的实例进行演示运算过程。
 该过程一步一步的演示了从完整哈希树抽取出部分哈希树，并以哈希列表和标志位的方式存储。
 
-图例
-  
-- ![](_images/3/image74.png)等待子节点的计算
-- ![](_images/3/image74.png)不需要的节点
-- ![](_images/3/image74.png)放入哈希列表的节点
-- ![](_images/3/image74.png)标记的节点
+| 图例                                                  |
+| ---                                                   |
+| ![](_images/3/extract-legend-1.png)等待子节点的计算   |
+| ![](_images/3/extract-legend-2.png)不需要的节点       |
+| ![](_images/3/extract-legend-3.png)放入哈希列表的节点 |
+| ![](_images/3/extract-legend-4.png)标记的节点         |
 
 <div id="table2">
 <table>

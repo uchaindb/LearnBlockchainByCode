@@ -11,7 +11,7 @@
 如下图所示，跟上一章相比，我们将Transactions字段单独存在于区块结构中，
 而剩余字段以及一个新的MerkleRoot字段一同放到区块头中。
 
-TODO: image
+![](_images/3/block-structure.png)
 
 因此变更后，区块头中包含以下字段：
 
