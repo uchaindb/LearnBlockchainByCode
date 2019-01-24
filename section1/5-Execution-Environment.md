@@ -2,6 +2,110 @@
 
 ## 虚拟机基础
 
+### stack
+
+定义
+	仅在表头进行插入和删除操作的线性表
+操作
+	压栈push、出栈pop
+特点
+	后进先出LIFO(Last In First Out)
+
+![](_images/5/stack.gif)
+
+### P2pkh
+
+锁定脚本(ScriptPubKey)
+	DUP HASH160 <公钥哈希> EQUALVERIFY CHECKSIG
+解锁脚本(ScriptSig)
+	<签名> <公钥>
+验证方式
+	【解锁脚本+锁定脚本】一起放入栈虚拟机运行
+	期望结果为“成功”（true）
+
+![](_images/5/p2pkh-0.png)
+
+（点开以下动图详细了解这三个安全特性）
+
+<!-- tabs:start -->
+
+#### ** 准备 **
+
+![](_images/5/p2pkh-1.gif)
+
+
+
+#### ** 签名 **
+
+![](_images/5/p2pkh-2.gif)
+
+
+
+#### ** 公钥 **
+
+![](_images/5/p2pkh-3.gif)
+
+
+
+#### ** 复制 **
+
+![](_images/5/p2pkh-4.gif)
+
+
+
+#### ** 计算哈希 **
+
+![](_images/5/p2pkh-5.gif)
+
+
+
+#### ** 公钥哈希 **
+
+![](_images/5/p2pkh-6.gif)
+
+
+
+#### ** 验证相等 **
+
+![](_images/5/p2pkh-7.gif)
+
+
+
+#### ** 验证签名 **
+
+![](_images/5/p2pkh-8.gif)
+
+
+
+#### ** 验证结果 **
+
+![](_images/5/p2pkh-9.gif)
+
+
+
+
+<!-- tabs:end -->
+
+
+### forbid
+
+比特币栈虚拟机被故意设计成图灵不完全
+故所有验证都可以在可预测的时间内完成
+对验证区块有威胁的操作符也被禁止使用
+
+OP_CAT
+OP_SUBSTR
+OP_LEFT
+OP_RIGHT
+OP_2MUL
+OP_2DIV
+OP_MUL
+OP_DIV
+OP_MOD
+OP_LSHIFT
+OP_RSHIFT
+
+
 ## 操作指令
 
 ```cs

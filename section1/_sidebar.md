@@ -30,7 +30,7 @@
     - [本章练习](section1/4-Exercise.md)
 
   - [智能合约](section1/5-Index.md)
-    - [最简合约：锁定时间](section1/5-Lock-Time.md)
+    - [锁定时间](section1/5-Lock-Time.md)
     - [执行环境](section1/5-Execution-Environment.md)
     - [智能合约](section1/5-Smart-Contracts.md)
     - [本章练习](section1/5-Exercise.md)
