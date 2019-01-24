@@ -107,7 +107,7 @@
         },
         function (hook, vm) {
           hook.beforeEach(function (html) {
-            return html.replace(/\^(.+?)\^(?!(.*end-inline-katex))/g, "<sup>$1</sup>");
+            return html.replace(/\^(.+?)\^(?!(.*end-(block|inline)-katex))/g, "<sup>$1</sup>");
           })
         }
       ]
