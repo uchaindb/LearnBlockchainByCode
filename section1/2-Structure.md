@@ -44,7 +44,7 @@ public class Hash
     }
 }  
 ```
-<!-- code:ClassicBlockChain/Entity/Hash.cs -->
+<!-- code:ClassicBlockChain/Entity/Hash.cs;branch:1_2_basic_blockchain -->
 
 ## 256字节数字类型
 
@@ -87,7 +87,7 @@ public class UInt256 : IComparable<UInt256>
     public int CompareTo(UInt256 other)    
 }    
 ```
-<!-- code:ClassicBlockChain/Entity/UInt256.cs -->
+<!-- code:ClassicBlockChain/Entity/UInt256.cs;branch:1_2_basic_blockchain -->
 
 ## 带哈希值的基类
 
@@ -101,7 +101,7 @@ public interface IHashObject
     UInt256 Hash { get; }  
 }  
 ```
-<!-- code:ClassicBlockChain/Entity/IHashObject.cs -->
+<!-- code:ClassicBlockChain/Entity/IHashObject.cs;branch:1_2_basic_blockchain -->
 
 该接口比较简单，确立了拥有Hash这个属性的类的接口。
 
@@ -153,7 +153,7 @@ public abstract class HashBase : IHashObject
     public override int GetHashCode()  
 }  
 ```
-<!-- code:ClassicBlockChain/Entity/HashBase.cs -->
+<!-- code:ClassicBlockChain/Entity/HashBase.cs;branch:1_2_basic_blockchain -->
 
 基于该抽象基类的子类中的需要被考虑进哈希生成的属性，需要像以下方式编写：
 
@@ -166,5 +166,5 @@ public byte Version
     set => this.SetPropertyField(ref this.version, value);  
 }  
 ```
-<!-- code:ClassicBlockChain/Entity/Transaction.cs -->
+<!-- code:ClassicBlockChain/Entity/Tx.cs;branch:1_2_basic_blockchain;line:14-18 -->
 

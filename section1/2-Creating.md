@@ -15,7 +15,7 @@ public class BlockChain
     private const byte BlockChainVersion = 1;  
     // 一个区块中可以存储的最大交易数量，本章简化为以数量计算，
     // 比特币的实际情况为按照交易的总字节数，最大不超过1M来计算（隔离见证的情况，会略有例外）；
-    private readonly int MaxTransactionNumberInBlock = 1000;  
+    private readonly int MaxTxNumberInBlock = 1000;  
     // 每个区块成功后，矿工可以获得奖励，比特币的实际情况是按照区块数量进行不断减半，直到最后不再有奖励；
     internal readonly int RewardOfBlock = 50;  
     // 存储创世区块；
@@ -31,39 +31,39 @@ public class BlockChain
     // 存储了所有区块信息，并使用哈希值进行索引；
     public ConcurrentDictionary<UInt256, Block> BlockDictionary { get; }  
     // 存储了从交易的哈希值到区块的索引，方便后续可以快速的找到交易；
-    internal ConcurrentDictionary<UInt256, (Block head, int index)> TransactionToBlockDictionary { get; }  
+    internal ConcurrentDictionary<UInt256, (Block head, int index)> TxToBlockDictionary { get; }  
     // 存储了已经被使用过的交易信息，此处其实可以使用HashSet，但为保证线程安全，简单的使用了线程安全的字典类；
-    internal ConcurrentDictionary<UInt256, byte> UsedTransactionDictionary { get; }  
+    internal ConcurrentDictionary<UInt256, byte> UsedTxDictionary { get; }  
     // 区块的高度，本章内容里，这里简单的使用了区块的总量，但值得注意的是，在后续章节，支持共识后，区块总量可能会大于实际的高度，因为可能有共识失败残留下的临时分叉区块；
     public int Height => this.BlockDictionary.Count;  
     // 尾部区块，即最后一个区块，这个也是整个有效区块链的入口，所有搜索都会从这个地方进入；
     public Block Tail { get; set; }  
     // 交易池，存储了所有待入块的交易；
-    private ConcurrentQueue<Transaction> TransactionQueue { get; }  
+    private ConcurrentQueue<Tx> TxQueue { get; }  
 
     // 判断在区块链中是否包含指定哈希值的交易；
-    internal bool ContainTransaction(UInt256 tranHash)  
+    internal bool ContainTx(UInt256 tranHash)  
     // 添加一笔交易至交易池中；
-    internal void AddTransaction(Transaction transaction)  
+    internal void AddTx(Tx tx)  
     // 添加一个区块，添加的区块可以不用填写随机值，该方法会在内部试图寻找使得区块有效的随机值，并在填写后返回该有效的区块；
     internal Block AddBlock(Block block)  
     // 根据一系列的输入交易的哈希值判断是否已经被使用过了；
-    internal bool ContainUsedTransactions(UInt256[] inputTransactions)  
+    internal bool ContainUsedTxs(UInt256[] inputTxs)  
     // 批量初始化一个或多个区块，必须是有效的区块；
     internal void InitBlocks(params Block[] blocks)  
     // 通过遍历所有可能的随机数，寻找有效的区块；
     private static Block FindValidBlock(Block originBlock, int difficulty)  
     // 从交易池中取出准备放入区块的交易；
-    internal Transaction[] DequeueTransactions()  
+    internal Tx[] DequeueTxs()  
     // 根据交易的哈希值获得对应的交易信息；
-    internal Transaction GetTransaction(UInt256 hash)  
+    internal Tx GetTx(UInt256 hash)  
 
     // 维护区块链的索引；
     private void MaintainBlockChain(Block newTail)  
     private void MaintainChainDictionary(Block from, Block to)  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain -->
 
 ---
 
@@ -121,10 +121,10 @@ public class Engine : IDisposable
         this.thWorker.Start();  
     }  
   
-    public UInt256 AttachTransaction(Transaction transaction) // 接受用户请求，添加一条交易请求到交易池中；
+    public UInt256 AttachTx(Tx tx) // 接受用户请求，添加一条交易请求到交易池中；
     private void GenerateBlockThread(object state) // 生成区块的独立线程逻辑；
     private Block GenerateBlock() // 生成区块的主要逻辑；
-    private bool ValidateTransaction(Transaction tran) // 验证交易是否有效且可执行的逻辑；
+    private bool ValidateTx(Tx tran) // 验证交易是否有效且可执行的逻辑；
 
     // 释放区块链的逻辑，将生成区块的独立线程优雅地停下来；
     public void Dispose()  
@@ -134,7 +134,7 @@ public class Engine : IDisposable
     }  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/Engine.cs -->
+<!-- code:ClassicBlockChain/Core/Engine.cs;branch:1_2_basic_blockchain -->
 
 其中该类在本章阶段里，最重要的就是管理区块的生成过程，我们将区块的生成过程放在独立的线程中操作，即以下方法：
 
@@ -159,21 +159,21 @@ private void GenerateBlockThread(object state)
     }  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/Engine.cs -->
+<!-- code:ClassicBlockChain/Core/Engine.cs;branch:1_2_basic_blockchain;line:33-47 -->
 
 ## 从交易池中取出交易
 
 打包交易的第一步便是需要从交易池中将指定数量的用户请求取出来，以便后续步骤进行验证后打包至区块中，这里是取出交易的方法：
 
 ```cs
-internal Transaction[] DequeueTransactions()  
+internal Tx[] DequeueTxs()  
 {  
     // 临时建立一个字典，主要目的是对交易池内的交易进行排重；
-    var dict = new Dictionary<UInt256, Transaction>();  
+    var dict = new Dictionary<UInt256, Tx>();  
     // 不断循环，直到交易池中没有交易或者当前有效交易数量达到我们设定的区块中交易数量，
     // 注意，实际生产中应考虑验证交易的有效性而不仅仅是排重后进行输出，这样才能实际的控制区块中的最终交易数量；
-    while (this.TransactionQueue.TryDequeue(out var tran)  
-        && dict.Count < this.MaxTransactionNumberInBlock)  
+    while (this.TxQueue.TryDequeue(out var tran)  
+        && dict.Count < this.MaxTxNumberInBlock)  
     {  
         // 排重性的添加，若不存在则添加；
         if (!dict.ContainsKey(tran.Hash))  
@@ -186,43 +186,43 @@ internal Transaction[] DequeueTransactions()
     return dict.Select(_ => _.Value).ToArray();  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:116-131 -->
 
 ## 交易的确认
 
 取出交易过后进行交易的验证，确认交易合法且可加入到区块后，将成为后续打包步骤的输入，此处使用此方法验证交易。
 
 ```cs
-private bool ValidateTransaction(Transaction tran)  
+private bool ValidateTx(Tx tran)  
 {  
     // 确认该交易的哈希值没有在现在的区块链上出现，即没有相同的交易，重复交易时不被允许的；
     // 并确认该交易不是已经被使用过的交易，任何交易都只能被使用一次；
-    return !this.BlockChain.ContainTransaction(tran.Hash)  
-        && !this.BlockChain.ContainUsedTransactions(tran.InputTransactions);  
+    return !this.BlockChain.ContainTx(tran.Hash)  
+        && !this.BlockChain.ContainUsedTxs(tran.InputTxs);  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/Engine.cs -->
+<!-- code:ClassicBlockChain/Core/Engine.cs;branch:1_2_basic_blockchain;line:72-76 -->
 
 以下是确认交易存在的方法实现：
 
 ```cs
 // 该方法简单的对已经维护妥当的区块链中的交易到区块的映射表进行查找即可；
-internal bool ContainTransaction(UInt256 tranHash)  
-    => this.TransactionToBlockDictionary.ContainsKey(tranHash);  
+internal bool ContainTx(UInt256 tranHash)  
+    => this.TxToBlockDictionary.ContainsKey(tranHash);  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:46-47 -->
 
 
 以下是确认输入交易使用过的方法实现：
 
 ```cs
-internal bool ContainUsedTransactions(UInt256[] inputTransactions)  
+internal bool ContainUsedTxs(UInt256[] inputTxs)  
 {  
     // 将每一个输入交易进行遍历判断；
-    foreach (var tran in inputTransactions)  
+    foreach (var tran in inputTxs)  
     {  
         // 在已经使用的交易列表中进行简单的查找，已确认其是否存在；
-        if (this.UsedTransactionDictionary.TryGetValue(tran, out var _))  
+        if (this.UsedTxDictionary.TryGetValue(tran, out var _))  
             return true;  
     }  
   
@@ -230,7 +230,7 @@ internal bool ContainUsedTransactions(UInt256[] inputTransactions)
     return false;  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:81-90 -->
 
 ## 将交易打包
 
@@ -239,18 +239,18 @@ internal bool ContainUsedTransactions(UInt256[] inputTransactions)
 ```cs
 private Block GenerateBlock()  
 {  
-    // 从区块链的交易池中取出交易，并通过ValidateTransaction方法进行验证，
+    // 从区块链的交易池中取出交易，并通过ValidateTx方法进行验证，
     // 留下通过验证的交易，其他不能通过验证的交易就丢弃掉；
-    var finalTrans = this.BlockChain.DequeueTransactions()  
-        .Where(this.ValidateTransaction)  
+    var finalTrans = this.BlockChain.DequeueTxs()  
+        .Where(this.ValidateTx)  
         .ToList();  
   
     // 创建一笔CoinBase交易，向矿工自己的钱包发送一笔奖励资金，其中由于本章未实现交易签名，
     // 故在MetaData相同的情况，同一矿工的所有CoinBase交易都会有相同的哈希值，
     // 故此处将MetaData填入一个随着时间发生变化的值，便能保证短时间的运行周期内不发生重复；
-    var minerTran = new Transaction  
+    var minerTran = new Tx  
     {  
-        OutputOwners = new[] { new TransactionOutput 
+        OutputOwners = new[] { new TxOutput 
             { Owner = this.MinerName, Value = this.BlockChain.RewardOfBlock } },  
         MetaData = DateTime.Now.Ticks.ToString(),  
     };  
@@ -265,13 +265,13 @@ private Block GenerateBlock()
     {  
         PreviousBlockHash = prevBlock.Hash, // 前一个区块的哈希值，这也是让区块形成区块链的核心；
         Time = DateTime.Now, // 记录当前的时间；
-        Transactions = allTrans, // 包含所有的有效交易；
+        Txs = allTrans, // 包含所有的有效交易；
     });  
     // 将生成成功的有效区块返回出去；
     return block;  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/Engine.cs -->
+<!-- code:ClassicBlockChain/Core/Engine.cs;branch:1_2_basic_blockchain;line:49-70 -->
 
 ## 区块创建过程
 
@@ -288,30 +288,30 @@ internal Block AddBlock(Block block)
     return block;  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:57-64 -->
 
 在最后放入区块链前做的最后交易的检查，属于防御性代码。
 
 ```cs
-private (bool ret, string error) CheckQueueOfTransaction(Transaction transaction)  
+private (bool ret, string error) CheckQueueOfTx(Tx tx)  
 {  
     // 若该交易已经存在于区块链上，则返回错误信息；
-    if (this.GetTransaction(transaction.Hash) != null)  
+    if (this.GetTx(tx.Hash) != null)  
     {  
-        return (false, "transaction you submit already exist in chain.");  
+        return (false, "tx you submit already exist in chain.");  
     }  
   
     // 若该交易已经存在于交易池中，则返回错误信息；
-    if (this.TransactionQueue.Any(_ => _.Hash == transaction.Hash))  
+    if (this.TxQueue.Any(_ => _.Hash == tx.Hash))  
     {  
-        return (false, "transaction you submit already exist in queue.");  
+        return (false, "tx you submit already exist in queue.");  
     }  
   
     // 若无错误，则直接返回正确的处理结果；
     return (true, null);  
 }    
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:66-79 -->
 
 此方法假设前置步骤已经将准备放入区块链中的区块验证和准备妥当了，此处便进行具体的放入操作并调起区块链维护代码。
 
@@ -328,7 +328,7 @@ internal void InitBlocks(params Block[] blocks)
     this.MaintainBlockChain(blocks.Last());  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:92-100 -->
 
 ## 维护区块链
 
@@ -344,7 +344,7 @@ private void MaintainBlockChain(Block newTail)
     if (this.Tail != prevTail) this.MaintainChainDictionary(GenesisBlock, this.Tail);  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:143-149 -->
 
 以下方法通过遍历从尾部到指定头部之间的区块，以确保新加入的区块中的所有交易都被放入交易的索引字典中，为后续调用做好了准备。
 
@@ -359,20 +359,20 @@ private void MaintainChainDictionary(Block from, Block to)
         // 我们先从区块字典（数据库）中获得区块的信息；
         var block = this.BlockDictionary[cursor.Hash];  
         // 确定区块的交易字段不为空，正常情况下，除了创世区块之外并无区块会有此种情况，此处主要是防御型代码；
-        if (block.Transactions != null)  
+        if (block.Txs != null)  
         {  
             // 遍历区块中的所有交易；
-            for (int i = 0; i < block.Transactions.Length; i++)  
+            for (int i = 0; i < block.Txs.Length; i++)  
             {  
                 // 取出当前准备遍历的交易信息；
-                var tran = block.Transactions[i];  
+                var tran = block.Txs[i];  
                 // 依此信息更新交易到区块的映射关系，使得我们未来可以快速的找到任意一笔交易，
                 // 且知道该笔交易所属的区块；
-                this.TransactionToBlockDictionary[tran.Hash] = (cursor, i);  
+                this.TxToBlockDictionary[tran.Hash] = (cursor, i);  
                 // 将所有的输入交易都加入到已使用的交易列表中，为下次创建区块时判断交易是否已经被使用过做好准备；
-                foreach (var usedTx in tran.InputTransactions ?? new UInt256[] { })  
+                foreach (var usedTx in tran.InputTxs ?? new UInt256[] { })  
                 {  
-                    this.UsedTransactionDictionary[usedTx] = 0;  
+                    this.UsedTxDictionary[usedTx] = 0;  
                 }  
             }  
         }  
@@ -382,5 +382,5 @@ private void MaintainChainDictionary(Block from, Block to)
     }  
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:151-174 -->
 

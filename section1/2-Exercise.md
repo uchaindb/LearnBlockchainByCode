@@ -21,7 +21,7 @@ private static void Main(string[] args)
     Console.ReadKey();    
 }    
 ```
-<!-- code:ClassicBlockChain/Program.cs -->
+<!-- code:ClassicBlockChain/Program.cs;branch:1_2_basic_blockchain;line:16-27 -->
 
 上面提到监听新区块创建的事件，这个是这个事件的处理代码，主要是打印新创建区块信息。
 
@@ -34,7 +34,7 @@ private static void Engine_OnNewBlockCreated(object sender, Block block)
     Console.WriteLine($"New block created at height[{height:0000}]: {engine.BlockChain.Tail}");    
 }    
 ```
-<!-- code:ClassicBlockChain/Program.cs -->
+<!-- code:ClassicBlockChain/Program.cs;branch:1_2_basic_blockchain;line:29-33 -->
 
 下面是交易的打印代码片段：
 
@@ -45,13 +45,13 @@ protected override string DebuggerDisplay => $"" +
     // 把每个接收者及其接收值打印出来，类似于：`(Alice: 50)`或`(Alice: 20, Bob:30)`； 
     $"({string.Join(",", this.OutputOwners?.Select(_ => _.ToString()) ?? new string[] { })}) <-- " +  
     // 根据是否有输入的交易打印不同的信息；
-    ((this.InputTransactions != null && this.InputTransactions.Length > 0)  
+    ((this.InputTxs != null && this.InputTxs.Length > 0)  
         // 若有输入的交易，则将哈希值的简短形式其打印出来，类似于：`(95280182E2)`；
-        ? $"({string.Join(",", this.InputTransactions.Select(_ => _.ToShort()))})"  
+        ? $"({string.Join(",", this.InputTxs.Select(_ => _.ToShort()))})"  
         // 若无输入的交易，则为CoinBase交易，故直接打印CoinBase字符串；
         : $"(Coin Base)");     
 ```
-<!-- code:ClassicBlockChain/Entity/Transaction.cs -->
+<!-- code:ClassicBlockChain/Entity/Tx.cs;branch:1_2_basic_blockchain;line:49-54 -->
 
 最终整体打印出的结果类似于：`95280182E2: (Alice: 50) <-- (D005F27FE4)`，
 即使用哈希值为`D005F27FE4`的交易作为输入，转账50给Alice，整体交易的哈希值为`95280182E2`，
@@ -64,12 +64,12 @@ protected override string DebuggerDisplay => $"{this.Hash.ToShort()}" + // 打�
     $": (" +  
     $"N: {this.Nonce,8}" + // 打印该区块的随机数值，并以最长8位数右对齐；
     $", " +  
-    $"T: {this.Transactions.Length}" + // 打印该区块中的交易数量；
+    $"T: {this.Txs.Length}" + // 打印该区块中的交易数量；
     $")\r\n" +  
     // 在下一行后面，每一行打印一个交易的详情（交易详情输出的样例见前一个代码片段）；
-    $"  {string.Join<Transaction>(Environment.NewLine + "  ", this.Transactions ?? new Transaction[] { })}";  
+    $"  {string.Join<Tx>(Environment.NewLine + "  ", this.Txs ?? new Tx[] { })}";  
 ```
-<!-- code:ClassicBlockChain/Entity/Block.cs -->
+<!-- code:ClassicBlockChain/Entity/Block.cs;branch:1_2_basic_blockchain;line:55-61 -->
 
 最终整体打印出的结果类似于：`0000A98510: (N: 71081, T: 0)`，即该区块的哈希值为`0000A98510`，
 使得该区块有效的随机数为71081，该区块的交易数量为0；
@@ -110,21 +110,21 @@ New block created at height\[0005\]: 000013D191: (N: 7177, T: 1)
 
 ```cs
 // 发送一笔转账交易的重载版本，仅支持一位接收者；
-private static void SendMoney(Engine engine, Transaction utxo, string receiver, int value)    
+private static void SendMoney(Engine engine, Tx utxo, string receiver, int value)    
 {    
-    SendMoney(engine, utxo, new TransactionOutput { Owner = receiver, Value = value });    
+    SendMoney(engine, utxo, new TxOutput { Owner = receiver, Value = value });    
 }    
 // 发送一笔转账交易的完整版本，支持任意数量的接收者；
-private static void SendMoney(Engine engine, Transaction utxo, params TransactionOutput[] outputs)    
+private static void SendMoney(Engine engine, Tx utxo, params TxOutput[] outputs)    
 {    
-    engine.AttachTransaction(new Transaction    
+    engine.AttachTx(new Tx    
     {    
-        InputTransactions = new[] { utxo.Hash },    
+        InputTxs = new[] { utxo.Hash },    
         OutputOwners = outputs,    
     });    
 }    
 ```
-<!-- code:ClassicBlockChain/Program.cs -->
+<!-- code:ClassicBlockChain/Program.cs;branch:1_2_basic_blockchain;line:54-66 -->
 
 继而在新区块创建成功的事件里面添加以下代码，分别在高度为2或者3的时候执行转账操作。
 
@@ -137,20 +137,20 @@ private static void Engine_OnNewBlockCreated(object sender, Block block)
     // 于是在该区块中找到这笔奖励的交易，并使用该交易执行向Alice发起价值50的转账交易；
     if (height == 2)    
     {    
-        var utxo = engine.BlockChain.Tail.Transactions.First();    
+        var utxo = engine.BlockChain.Tail.Txs.First();    
         SendMoney(engine, utxo, AliceName, 50);    
     }    
     // 当区块的高度为3时，即上一步骤中发送给Alice的转账交易已经顺利完成的时候，
     // 我们在前一区块中找到属于Alice的未使用交易，并使用该交易执行向Bob发起价值50的转账交易；
     else if (height == 3)    
     {    
-        var utxo = engine.BlockChain.Tail.Transactions    
+        var utxo = engine.BlockChain.Tail.Txs    
             .First(txs => txs.OutputOwners.Any(_ => _.Owner == AliceName));    
         SendMoney(engine, utxo, BobName, 50);    
     }    
 }    
 ```
-<!-- code:ClassicBlockChain/Program.cs -->
+<!-- code:ClassicBlockChain/Program.cs;branch:1_2_basic_blockchain;line:35-46 -->
 
 综合以上代码执行之后，结果如下：
 
@@ -188,7 +188,7 @@ New block created at height\[0005\]: 00001861AF: (N: 45519, T: 1)
 
 ```cs
 // 声明一个静态变量，用来临时存放高度为2时用过的交易；
-private static Transaction h2utxo = null;  
+private static Tx h2utxo = null;  
 private static void Engine_OnNewBlockCreated(object sender, Block block)  
 {  
     ...  
@@ -206,7 +206,7 @@ private static void Engine_OnNewBlockCreated(object sender, Block block)
     }  
 }  
 ```
-<!-- code:ClassicBlockChain/Program.cs -->
+<!-- code:ClassicBlockChain/Program.cs;branch:1_2_basic_blockchain;line:47-51 -->
 
 
 运行起来的输出和基本练习二的完全一样，说明最后一笔转账请求被认为是无效交易而被忽略，没有被打包进新的区块。

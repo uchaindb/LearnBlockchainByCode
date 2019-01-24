@@ -211,26 +211,26 @@ Bob将自己的一部分给了矿工，同样的找零机制，让自己的钱�
 
 ## 交易的结构
 
-| 字段              | 描述           | 类型                    |
-| ---               | ---            | ---                     |
-| Version           | 版本号         | Byte                    |
-| MetaData          | 任意字符串     | String                  |
-| InputTransactions | 输入交易列表   | UInt256[]               |
-| OutputOwners      | 接收者列表     | TransactionOutput[]^\*^ |
-| Hash              | 本交易的哈希值 | UInt256                 |
+| 字段         | 描述           | 类型           |
+| ---          | ---            | ---            |
+| Version      | 版本号         | Byte           |
+| MetaData     | 任意字符串     | String         |
+| InputTxs     | 输入交易列表   | UInt256[]      |
+| OutputOwners | 接收者列表     | TxOutput[]^\*^ |
+| Hash         | 本交易的哈希值 | UInt256        |
 
-<!-- code:ClassicBlockChain/Entity/Transaction.cs -->
+<!-- code:ClassicBlockChain/Entity/Tx.cs;branch:1_2_basic_blockchain -->
 
 \*注：该类型如以下代码所示，非常简单的仅有接收者和货币数量两个字段。
 
 ```cs
-public class TransactionOutput  
+public class TxOutput  
 {  
     public string Owner { get; set; }  
     public int Value { get; set; }  
 }  
 ```
-<!-- code:ClassicBlockChain/Entity/TransactionOutput.cs -->
+<!-- code:ClassicBlockChain/Entity/TxOutput.cs;branch:1_2_basic_blockchain -->
 
 该表格中的除了本交易的哈希值以外的所有字段，均会被作为本交易的哈希值计算的基础数据，
 故这些字段的任意一点变化均会导致本交易的哈希值的不同，以下对每个字段进行详细解释：

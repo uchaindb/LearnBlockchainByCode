@@ -4,14 +4,14 @@
 
 ## 区块结构
 
-| 字段              | 描述             | 类型            |
-| ---               | ---              | ---             |
-| Version           | 版本号           | Byte            |
-| PreviousBlockHash | 前一区块的哈希值 | UInt256         |
-| Time              | 时间戳           | DateTime        |
-| Transactions      | 所有交易         | Transaction^\*^ |
-| Nonce             | 随机数           | UInt32          |
-| Hash              | 本区块的哈希值   | UInt256         |
+| 字段              | 描述             | 类型     |
+| ---               | ---              | ---      |
+| Version           | 版本号           | Byte     |
+| PreviousBlockHash | 前一区块的哈希值 | UInt256  |
+| Time              | 时间戳           | DateTime |
+| Txs               | 所有交易         | Tx^\*^   |
+| Nonce             | 随机数           | UInt32   |
+| Hash              | 本区块的哈希值   | UInt256  |
 
 <!-- code:ClassicBlockChain/Entity/Block.cs;branch:1_2_basic_blockchain -->
 
@@ -80,7 +80,7 @@ GenesisBlock = FindValidBlock(new Block
     PreviousBlockHash = null,  
     Time = new DateTime(2017, 6, 30, 9, 0, 0, DateTimeKind.Utc),  
     Version = BlockChainVersion,  
-    Transactions = new Transaction[] { },  
+    Txs = new Tx[] { },  
 }, Difficulty);  
 ```
 <!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:13-19 -->
