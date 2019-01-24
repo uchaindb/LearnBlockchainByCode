@@ -35,7 +35,7 @@
     - [智能合约](section1/5-Smart-Contracts.md)
     - [本章练习](section1/5-Exercise.md)
 
-  - [高级主题(未完成)](section1/6-Index.md)
+  - [高级主题](section1/6-Index.md)
 
   <!-- - [高级主题](section1/6-Index.md) -->
   <!--   - [Bloom过滤器](section1/6-Bloom-Filter.md) -->
