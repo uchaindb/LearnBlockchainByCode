@@ -116,7 +116,18 @@
         },
         function (hook, vm) {
           hook.beforeEach(function (html) {
-            return html.replace(/<!-- code:(.*) -->/g, "?> 参考代码：[$1](https://github.com/uchaindb/LearnBlockchainByCode/blob/master/$1)");
+            return html.replace(
+              /<!-- code:(.*?)(?:;branch:(.*?))?(?:;line:(\d+?)-(\d+?))? -->/g,
+              function(match, path, branch, lstart, lend){
+                branch = branch || "master";
+                const loc = (lstart && lend) ? `#L${lstart}-L${lend}` : "";
+                const locDesc = (lstart && lend) ? `\n代码行：${lstart}-${lend}` : "";
+                return `?> :clipboard: 参考代码：
+                  <a href="https://github.com/uchaindb/LearnBlockchainByCode/blob/${branch}/${path}${loc}"
+                     title="分支：\[${branch}\]${locDesc}" target="_blank">
+                      ${path}
+                  </a>`;
+              });
           })
         },
         function (hook, vm) {

@@ -13,7 +13,7 @@
 | Nonce             | 随机数           | UInt32          |
 | Hash              | 本区块的哈希值   | UInt256         |
 
-<!-- code:ClassicBlockChain/Entity/Block.cs -->
+<!-- code:ClassicBlockChain/Entity/Block.cs;branch:1_2_basic_blockchain -->
 
 \*注：该类型会在下一节中具体解释，在此先介绍区块有助于对系统整体的理解。
 
@@ -56,7 +56,7 @@ private static Block FindValidBlock(Block originBlock, int difficulty)
     }
 }  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:102-114 -->
 
 ---
 > #### 扩展知识
@@ -83,7 +83,7 @@ GenesisBlock = FindValidBlock(new Block
     Transactions = new Transaction[] { },  
 }, Difficulty);  
 ```
-<!-- code:ClassicBlockChain/Core/BlockChain.cs -->
+<!-- code:ClassicBlockChain/Core/BlockChain.cs;branch:1_2_basic_blockchain;line:13-19 -->
 
 区块链是一系列的区块链接在一起的，这其中第一个区块，即为创世区块。它有如下几个特点：
 
