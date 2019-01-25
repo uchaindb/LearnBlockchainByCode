@@ -160,6 +160,11 @@
             }
             return html;
           })
+        },
+        function (hook, vm) {
+          hook.beforeEach(function (html) {
+            return html.replace(/读书提示：.*?。/g, "");
+          })
         }
       ]
     }
