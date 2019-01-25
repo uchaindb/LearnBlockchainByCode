@@ -44,6 +44,11 @@
       padding: 12px 24px 12px 30px;
       background-color: rgb(248, 248, 248);
     }
+    article > .footer, article > .footer a{
+      color: #ccc;
+      font-weight: normal;
+      text-decoration: none;
+    }
   </style>
 </head>
 
@@ -81,8 +86,6 @@
         }
       },
       alias: {
-        '.*?/awesome': 'https://raw.githubusercontent.com/docsifyjs/awesome-docsify/master/README.md',
-        '.*?/changelog': 'https://raw.githubusercontent.com/docsifyjs/docsify/master/CHANGELOG.md',
         '/.*/_navbar.md': '/_navbar.md',
       },
       auto2top: true,
@@ -113,14 +116,19 @@
                 .replace('raw.githubusercontent.com', 'github.com')
                 .replace(/\/master/, '/blob/master')
             } else {
-              url = 'https://github.com/docsifyjs/docsify/blob/master/docs/' + vm.route.file
+              url = 'https://github.com/uchaindb/LearnBlockchainByCode/blob/gh-pages/' + vm.route.file
             }
-            var editHtml = '[:memo: Edit Document](' + url + ')\n'
+            var editHtml = '[:memo: 编辑此文档](' + url + ')\n'
 
             return editHtml
               + html
               + '\n\n----\n\n'
-              + '<a href="https://docsify.js.org" target="_blank" style="color: #ccc; font-weight: normal; text-decoration: none;">Powered by docsify</a>'
+              + `<div class="footer">
+              作者：
+              <a href="https://github.com/uchaindb" target="_blank">优链数据库</a>
+              <a href="https://www.icerdesign.com" target="_blank">梁爽</a>
+              | 主题： <a href="https://docsify.js.org" target="_blank">docsify</a>
+              </div>`
           })
         },
         function (hook, vm) {
@@ -164,12 +172,12 @@
   <script src="//unpkg.com/docsify-copy-code@2"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
   
-  <!-- <script> -->
-  <!-- ((window.gitter = {}).chat = {}).options = { -->
-  <!--   room: 'docsifyjs/Lobby' -->
-  <!-- }; -->
-  <!-- </script> -->
-  <!-- <script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script> -->
+  <script>
+  ((window.gitter = {}).chat = {}).options = {
+    room: 'uchaindb/Lobby'
+  };
+  </script>
+  <script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script>
 </body>
 
 </html>
