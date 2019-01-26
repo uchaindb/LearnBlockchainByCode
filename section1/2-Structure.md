@@ -4,6 +4,30 @@
 
 鉴于是从零开始创建一个基本的区块链程序，我们本节会涉及到几个极其基础的结构和类。
 
+```plantuml
+interface IHashObject
+abstract HashBase
+class UInt256
+class Hash
+
+IHashObject <|-- HashBase
+HashBase .right.> Hash : <<use>> 
+Hash .up.> UInt256 : <<convertible>> 
+IHashObject .right.> UInt256 : <<use>> 
+
+IHashObject : +UInt256 Hash
+
+HashBase : +UInt256 Hash
+
+Hash : -byte[] data
+Hash : +Hash(byte[] data)
+
+UInt256 : +UInt256(byte[] data)
+UInt256 : +UInt256 Parse(string str)
+UInt256 : +string ToHex()
+```
+<!-- code:ClassicBlockChain/Entity;branch:1_2_basic_blockchain -->
+
 ## 哈希计算
 
 我们设计了以下Hash类进行计算，将一些常用操作进行封装，方便后续代码操作。
