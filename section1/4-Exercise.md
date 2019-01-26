@@ -25,3 +25,5 @@ public class ControlService
 
 ## 扩展练习一 同步时验证区块内容
 
+## 扩展练习二 用魔数区分网络
+
