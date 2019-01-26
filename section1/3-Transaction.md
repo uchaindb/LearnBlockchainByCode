@@ -45,7 +45,23 @@
 与上一章的程序相比，为了支持交易的签名，交易的输入输出结构发生了较大的变化，
 不过交易本身仍旧是链式交易这件事情没有变化。
 
-![](_images/3/image87.png)
+```mermaid
+classDiagram
+Tx "1" *-- "*" TxInput
+Tx "1" *-- "1..*" TxOutput
+
+Tx : +byte Version
+Tx : +TxInput Inputs
+Tx : +TxOutput Outputs
+Tx : +UInt256 Hash
+
+TxInput : +UInt256 PrevTxHash
+TxInput : +int PrevTxIndex
+TxInput : +Signature Signature
+
+TxOutput : +PublickKey PublickKey
+TxOutput : +int Value
+```
 
 如上图所示，我们有三个类，下面分别进行详述。
 
