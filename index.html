@@ -10,9 +10,6 @@
   <meta name="description" content="《区块链系统实现》开源书籍。The book about learning blockchain by code">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css" title="vue">
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/dark.css" title="dark" disabled>
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/buble.css" title="buble" disabled>
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/pure.css" title="pure" disabled>
   <link rel="stylesheet" href="//unpkg.com/prismjs/themes/prism.css">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
@@ -47,6 +44,14 @@
       color: #ccc;
       font-weight: normal;
       text-decoration: none;
+    }
+    .markdown-section pre + p.coderef {
+      margin-top: -1.2em;
+    }
+    .markdown-section p.coderef {
+      background: rgba(66,185,131,.1);
+      border-radius: 2px;
+      padding: 1rem;
     }
   </style>
 </head>
@@ -154,11 +159,13 @@
                 branch = branch || "master";
                 const loc = (lstart && lend) ? `#L${lstart}-L${lend}` : "";
                 const locDesc = (lstart && lend) ? `\n代码行：${lstart}-${lend}` : "";
-                return `?> :clipboard: 参考代码：
+                return `<p class="coderef">
+                  :octocat: 参考代码：
                   <a href="https://github.com/uchaindb/LearnBlockchainByCode/blob/${branch}/${path}${loc}"
                      title="分支：\[${branch}\]${locDesc}" target="_blank">
                       ${path}
-                  </a>`;
+                  </a>
+                </p>`;
               });
           })
         },
