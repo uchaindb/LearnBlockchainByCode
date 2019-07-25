@@ -1,0 +1,12 @@
+---
+title: 区块链系统实现
+subtitle: v0.1
+author: 梁爽（冰河魔法师）(Icer)
+language: zh-CN
+
+# Variables for Latex
+documentclass: book
+classoption: oneside
+fontsize: 12pt
+toc: true
+---
