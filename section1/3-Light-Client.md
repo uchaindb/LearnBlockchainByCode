@@ -30,7 +30,6 @@ public interface IWallet
 }  
 ```
 <!-- code:ClassicBlockChain/Wallet/IWallet.cs -->
-代码：ClassicBlockChain\Wallet\IWallet.cs
 
 ```cs
 public abstract class BaseWallet : IWallet  

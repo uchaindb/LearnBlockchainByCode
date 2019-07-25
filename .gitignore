@@ -4,3 +4,4 @@
 # Releases
 *.pdf
 *.epub
+/tmp
