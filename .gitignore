@@ -5,3 +5,5 @@
 *.pdf
 *.epub
 /tmp
+
+node_modules

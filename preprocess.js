@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+const marked = require('marked');
 
 // var tmpdir = __dirname + './tmp/';
 var tmpdir = './tmp/';
@@ -131,6 +132,7 @@ function preprocess(content) {
 
 readFiles('section1/', function(filename, content) {
   let pcnt = preprocess(content);
+  let pcnt = marked(pcnt);
   let filepath = tmpdir + filename;
   // console.log(filepath);
 
